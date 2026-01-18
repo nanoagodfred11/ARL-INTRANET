@@ -18,15 +18,20 @@
 
 | Section | Description | Status | Completed |
 |---------|-------------|--------|-----------|
-| 1.1.1.1 | Development Environment Setup | ✅ | 6/7 |
-| 1.1.1.2 | Database Setup | ⏳ | 0/8 |
-| 1.1.1.3 | Base Layout & Navigation | ✅ | 8/10 |
-| 1.1.2 | Admin Portal & Authentication | ⏳ | 0/28 |
-| 1.1.3 | News & Announcements | ⏳ | 0/28 |
-| 1.1.4 | Company Contact Directory | ⏳ | 0/18 |
-| 1.1.5 | Company Apps Links | ⏳ | 0/13 |
+| 1.1.1.1 | Development Environment Setup | ✅ | 7/7 |
+| 1.1.1.2 | Database Setup | ✅ | 8/8 |
+| 1.1.1.3 | Base Layout & Navigation | ✅ | 10/10 |
+| 1.1.2 | Admin Portal & Authentication | ✅ | 28/28 |
+| 1.1.3 | News & Announcements | ✅ | 28/28 |
+| 1.1.4 | Company Contact Directory | ✅ | 18/18 |
+| 1.1.5 | Company Apps Links | ✅ | 13/13 |
 
-**Last Updated:** January 11, 2026
+**Last Updated:** January 12, 2026 (Phase 2 In Progress)
+
+| 1.2.1 | Daily Toolbox Talk | ✅ | 23/26 |
+| 1.2.2 | Safety Tips & Videos | ⏳ | 0/21 |
+| 1.2.3 | Safety & Incident Alerts | ⏳ | 0/17 |
+| 1.2.4 | Canteen Menu | ⏳ | 0/15 |
 
 ---
 
@@ -42,20 +47,20 @@
 | 1.1.1.1.3 | Set up project folder structure (routes, components, lib, utils) | 1.1.1.1.1 | ✅ |
 | 1.1.1.1.4 | Configure ESLint and Prettier | 1.1.1.1.1 | ✅ |
 | 1.1.1.1.5 | Set up environment variables configuration | 1.1.1.1.1 | ✅ |
-| 1.1.1.1.6 | Create Git repository and initial commit | 1.1.1.1.1 | ⏳ |
+| 1.1.1.1.6 | Create Git repository and initial commit | 1.1.1.1.1 | ✅ |
 | 1.1.1.1.7 | Set up development scripts (dev, build, start) | 1.1.1.1.1 | ✅ |
 
-### 1.1.1.2 Database Setup ⏳
+### 1.1.1.2 Database Setup ✅
 | Task ID | Task Description | Dependencies | Status |
 |---------|------------------|--------------|--------|
-| 1.1.1.2.1 | Install MongoDB driver and Mongoose ODM | 1.1.1.1.1 | ⏳ |
-| 1.1.1.2.2 | Create database connection utility | 1.1.1.2.1 | ⏳ |
-| 1.1.1.2.3 | Design and create Admin User schema | 1.1.1.2.2 | ⏳ |
-| 1.1.1.2.4 | Design and create News/Announcement schema | 1.1.1.2.2 | ⏳ |
-| 1.1.1.2.5 | Design and create Contact Directory schema | 1.1.1.2.2 | ⏳ |
-| 1.1.1.2.6 | Design and create App Links schema | 1.1.1.2.2 | ⏳ |
-| 1.1.1.2.7 | Create database seed scripts for initial data | 1.1.1.2.3-6 | ⏳ |
-| 1.1.1.2.8 | Set up database indexing for performance | 1.1.1.2.3-6 | ⏳ |
+| 1.1.1.2.1 | Install MongoDB driver and Mongoose ODM | 1.1.1.1.1 | ✅ |
+| 1.1.1.2.2 | Create database connection utility | 1.1.1.2.1 | ✅ |
+| 1.1.1.2.3 | Design and create Admin User schema | 1.1.1.2.2 | ✅ |
+| 1.1.1.2.4 | Design and create News/Announcement schema | 1.1.1.2.2 | ✅ |
+| 1.1.1.2.5 | Design and create Contact Directory schema | 1.1.1.2.2 | ✅ |
+| 1.1.1.2.6 | Design and create App Links schema | 1.1.1.2.2 | ✅ |
+| 1.1.1.2.7 | Create database seed scripts for initial data | 1.1.1.2.3-6 | ✅ |
+| 1.1.1.2.8 | Set up database indexing for performance | 1.1.1.2.3-6 | ✅ |
 
 ### 1.1.1.3 Base Layout & Navigation ✅
 | Task ID | Task Description | Dependencies | Status |
@@ -63,245 +68,245 @@
 | 1.1.1.3.1 | Create main layout component with header and footer | 1.1.1.1.2 | ✅ |
 | 1.1.1.3.2 | Implement responsive navigation bar | 1.1.1.3.1 | ✅ |
 | 1.1.1.3.3 | Create mobile hamburger menu | 1.1.1.3.2 | ✅ |
-| 1.1.1.3.4 | Implement sidebar navigation (if applicable) | 1.1.1.3.1 | ⏳ |
+| 1.1.1.3.4 | Implement sidebar navigation (if applicable) | 1.1.1.3.1 | ✅ |
 | 1.1.1.3.5 | Create footer component with company info | 1.1.1.3.1 | ✅ |
 | 1.1.1.3.6 | Apply brand colors and typography | 1.1.1.3.1 | ✅ |
 | 1.1.1.3.7 | Create loading spinner/skeleton components | 1.1.1.1.2 | ✅ |
 | 1.1.1.3.8 | Create error boundary and 404 page | 1.1.1.3.1 | ✅ |
-| 1.1.1.3.9 | Implement breadcrumb navigation | 1.1.1.3.1 | ⏳ |
+| 1.1.1.3.9 | Implement breadcrumb navigation | 1.1.1.3.1 | ✅ |
 | 1.1.1.3.10 | Create homepage/dashboard layout | 1.1.1.3.1 | ✅ |
 
 ---
 
-## 1.1.2 Admin Portal & Authentication ⏳
+## 1.1.2 Admin Portal & Authentication ✅
 
-### 1.1.2.1 OTP Authentication System ⏳
+### 1.1.2.1 OTP Authentication System ✅
 | Task ID | Task Description | Dependencies | Status |
 |---------|------------------|--------------|--------|
-| 1.1.2.1.1 | Select and integrate SMS OTP provider (e.g., Twilio, Africa's Talking) | None | ⏳ |
-| 1.1.2.1.2 | Create OTP generation utility (6-digit, expiry) | 1.1.2.1.1 | ⏳ |
-| 1.1.2.1.3 | Create OTP storage schema in MongoDB (temp, with TTL) | 1.1.1.2.2 | ⏳ |
-| 1.1.2.1.4 | Build OTP request API endpoint | 1.1.2.1.2, 1.1.2.1.3 | ⏳ |
-| 1.1.2.1.5 | Build OTP verification API endpoint | 1.1.2.1.4 | ⏳ |
-| 1.1.2.1.6 | Implement rate limiting for OTP requests | 1.1.2.1.4 | ⏳ |
-| 1.1.2.1.7 | Create phone number input component with validation | 1.1.1.1.2 | ⏳ |
-| 1.1.2.1.8 | Create OTP input component (6-digit boxes) | 1.1.1.1.2 | ⏳ |
-| 1.1.2.1.9 | Build login page UI | 1.1.2.1.7, 1.1.2.1.8 | ⏳ |
-| 1.1.2.1.10 | Implement OTP resend functionality with cooldown | 1.1.2.1.4 | ⏳ |
+| 1.1.2.1.1 | Select and integrate SMS OTP provider (smsonlinegh.com) | None | ✅ |
+| 1.1.2.1.2 | Create OTP generation utility (6-digit, expiry) | 1.1.2.1.1 | ✅ |
+| 1.1.2.1.3 | Create OTP storage schema in MongoDB (temp, with TTL) | 1.1.1.2.2 | ✅ |
+| 1.1.2.1.4 | Build OTP request API endpoint | 1.1.2.1.2, 1.1.2.1.3 | ✅ |
+| 1.1.2.1.5 | Build OTP verification API endpoint | 1.1.2.1.4 | ✅ |
+| 1.1.2.1.6 | Implement rate limiting for OTP requests | 1.1.2.1.4 | ✅ |
+| 1.1.2.1.7 | Create phone number input component with validation | 1.1.1.1.2 | ✅ |
+| 1.1.2.1.8 | Create OTP input component (6-digit boxes) | 1.1.1.1.2 | ✅ |
+| 1.1.2.1.9 | Build login page UI | 1.1.2.1.7, 1.1.2.1.8 | ✅ |
+| 1.1.2.1.10 | Implement OTP resend functionality with cooldown | 1.1.2.1.4 | ✅ |
 
-### 1.1.2.2 JWT & Session Management ⏳
+### 1.1.2.2 Cookie Session Management ✅
 | Task ID | Task Description | Dependencies | Status |
 |---------|------------------|--------------|--------|
-| 1.1.2.2.1 | Install and configure JWT library | 1.1.1.1.1 | ⏳ |
-| 1.1.2.2.2 | Create JWT generation utility (access + refresh tokens) | 1.1.2.2.1 | ⏳ |
-| 1.1.2.2.3 | Create JWT verification middleware | 1.1.2.2.2 | ⏳ |
-| 1.1.2.2.4 | Implement refresh token rotation | 1.1.2.2.2 | ⏳ |
-| 1.1.2.2.5 | Create auth context/provider for frontend | 1.1.2.2.2 |
-| 1.1.2.2.6 | Implement protected route wrapper | 1.1.2.2.5 |
-| 1.1.2.2.7 | Create logout functionality (token invalidation) | 1.1.2.2.5 |
-| 1.1.2.2.8 | Implement session expiry handling | 1.1.2.2.5 |
-| 1.1.2.2.9 | Add token storage (httpOnly cookies or secure storage) | 1.1.2.2.2 |
+| 1.1.2.2.1 | Install and configure session library | 1.1.1.1.1 | ✅ |
+| 1.1.2.2.2 | Create cookie session storage utility | 1.1.2.2.1 | ✅ |
+| 1.1.2.2.3 | Create session verification middleware | 1.1.2.2.2 | ✅ |
+| 1.1.2.2.4 | N/A (using React Router sessions) | - | ✅ |
+| 1.1.2.2.5 | N/A (using React Router loaders) | - | ✅ |
+| 1.1.2.2.6 | Implement protected route wrapper (requireAuth) | 1.1.2.2.2 | ✅ |
+| 1.1.2.2.7 | Create logout functionality (session destroy) | 1.1.2.2.2 | ✅ |
+| 1.1.2.2.8 | Implement session expiry handling | 1.1.2.2.2 | ✅ |
+| 1.1.2.2.9 | Add httpOnly cookie storage | 1.1.2.2.2 | ✅ |
 
-### 1.1.2.3 Admin Portal UI
-| Task ID | Task Description | Dependencies |
-|---------|------------------|--------------|
-| 1.1.2.3.1 | Create admin layout component (sidebar, header) | 1.1.2.2.6 |
-| 1.1.2.3.2 | Build admin dashboard homepage | 1.1.2.3.1 |
-| 1.1.2.3.3 | Create admin navigation menu | 1.1.2.3.1 |
-| 1.1.2.3.4 | Implement admin header with user info and logout | 1.1.2.3.1 |
-| 1.1.2.3.5 | Create reusable admin data table component | 1.1.2.3.1 |
-| 1.1.2.3.6 | Create reusable admin form components | 1.1.2.3.1 |
-| 1.1.2.3.7 | Create confirmation modal component | 1.1.2.3.1 |
-| 1.1.2.3.8 | Implement toast notification system | 1.1.2.3.1 |
-| 1.1.2.3.9 | Create admin search/filter components | 1.1.2.3.1 |
-| 1.1.2.3.10 | Implement pagination component | 1.1.2.3.1 |
+### 1.1.2.3 Admin Portal UI ✅
+| Task ID | Task Description | Dependencies | Status |
+|---------|------------------|--------------|--------|
+| 1.1.2.3.1 | Create admin layout component (sidebar, header) | 1.1.2.2.6 | ✅ |
+| 1.1.2.3.2 | Build admin dashboard homepage | 1.1.2.3.1 | ✅ |
+| 1.1.2.3.3 | Create admin navigation menu | 1.1.2.3.1 | ✅ |
+| 1.1.2.3.4 | Implement admin header with user info and logout | 1.1.2.3.1 | ✅ |
+| 1.1.2.3.5 | Create reusable admin data table component | 1.1.2.3.1 | ✅ |
+| 1.1.2.3.6 | Create reusable admin form components | 1.1.2.3.1 | ✅ |
+| 1.1.2.3.7 | Create confirmation modal component | 1.1.2.3.1 | ✅ |
+| 1.1.2.3.8 | Implement toast notification system | 1.1.2.3.1 | ✅ |
+| 1.1.2.3.9 | Create admin search/filter components | 1.1.2.3.1 | ✅ |
+| 1.1.2.3.10 | Implement pagination component | 1.1.2.3.1 | ✅ |
 
-### 1.1.2.4 Superadmin Management
-| Task ID | Task Description | Dependencies |
-|---------|------------------|--------------|
-| 1.1.2.4.1 | Create superadmin user schema with roles | 1.1.1.2.3 |
-| 1.1.2.4.2 | Build superadmin creation script (initial setup) | 1.1.2.4.1 |
-| 1.1.2.4.3 | Create admin user listing page | 1.1.2.3.5 |
-| 1.1.2.4.4 | Build admin user creation form | 1.1.2.3.6 |
-| 1.1.2.4.5 | Implement admin user edit functionality | 1.1.2.4.4 |
-| 1.1.2.4.6 | Implement admin user deactivation | 1.1.2.4.3 |
-| 1.1.2.4.7 | Create activity log schema | 1.1.1.2.2 |
-| 1.1.2.4.8 | Implement admin activity logging | 1.1.2.4.7 |
-| 1.1.2.4.9 | Build activity log viewer | 1.1.2.4.8 |
-
----
-
-## 1.1.3 News & Announcements
-
-### 1.1.3.1 Backend Development
-| Task ID | Task Description | Dependencies |
-|---------|------------------|--------------|
-| 1.1.3.1.1 | Finalize News schema (title, content, category, author, dates, status) | 1.1.1.2.4 |
-| 1.1.3.1.2 | Create GET /api/news endpoint (public, with pagination) | 1.1.3.1.1 |
-| 1.1.3.1.3 | Create GET /api/news/:id endpoint (single news) | 1.1.3.1.1 |
-| 1.1.3.1.4 | Create POST /api/admin/news endpoint (create) | 1.1.3.1.1, 1.1.2.2.3 |
-| 1.1.3.1.5 | Create PUT /api/admin/news/:id endpoint (update) | 1.1.3.1.1, 1.1.2.2.3 |
-| 1.1.3.1.6 | Create DELETE /api/admin/news/:id endpoint | 1.1.3.1.1, 1.1.2.2.3 |
-| 1.1.3.1.7 | Implement news category management | 1.1.3.1.1 |
-| 1.1.3.1.8 | Implement news search and filtering | 1.1.3.1.2 |
-| 1.1.3.1.9 | Add featured/pinned news functionality | 1.1.3.1.1 |
-| 1.1.3.1.10 | Implement news scheduling (publish date) | 1.1.3.1.1 |
-
-### 1.1.3.2 Image Upload System
-| Task ID | Task Description | Dependencies |
-|---------|------------------|--------------|
-| 1.1.3.2.1 | Set up file upload middleware (multer) | 1.1.1.1.1 |
-| 1.1.3.2.2 | Create uploads directory structure | 1.1.3.2.1 |
-| 1.1.3.2.3 | Implement image upload API endpoint | 1.1.3.2.1 |
-| 1.1.3.2.4 | Add image validation (type, size limits) | 1.1.3.2.3 |
-| 1.1.3.2.5 | Implement image compression/optimization | 1.1.3.2.3 |
-| 1.1.3.2.6 | Create image deletion functionality | 1.1.3.2.3 |
-| 1.1.3.2.7 | Set up static file serving for uploads | 1.1.3.2.2 |
-
-### 1.1.3.3 Public News UI
-| Task ID | Task Description | Dependencies |
-|---------|------------------|--------------|
-| 1.1.3.3.1 | Create news listing page | 1.1.3.1.2 |
-| 1.1.3.3.2 | Build news card component | 1.1.3.3.1 |
-| 1.1.3.3.3 | Implement news category filter tabs | 1.1.3.3.1 |
-| 1.1.3.3.4 | Create single news detail page | 1.1.3.1.3 |
-| 1.1.3.3.5 | Add news image carousel (if multiple images) | 1.1.3.3.4 |
-| 1.1.3.3.6 | Implement related news section | 1.1.3.3.4 |
-| 1.1.3.3.7 | Create news search functionality | 1.1.3.1.8 |
-| 1.1.3.3.8 | Add homepage news widget/section | 1.1.1.3.10 |
-| 1.1.3.3.9 | Implement infinite scroll or pagination | 1.1.3.3.1 |
-
-### 1.1.3.4 Admin News Management
-| Task ID | Task Description | Dependencies |
-|---------|------------------|--------------|
-| 1.1.3.4.1 | Create admin news listing page | 1.1.2.3.5, 1.1.3.1.2 |
-| 1.1.3.4.2 | Build news creation form with rich text editor | 1.1.2.3.6 |
-| 1.1.3.4.3 | Integrate image upload in news form | 1.1.3.2.3, 1.1.3.4.2 |
-| 1.1.3.4.4 | Create news edit page | 1.1.3.4.2 |
-| 1.1.3.4.5 | Implement news delete with confirmation | 1.1.2.3.7 |
-| 1.1.3.4.6 | Add publish/unpublish toggle | 1.1.3.4.1 |
-| 1.1.3.4.7 | Create category management page | 1.1.3.1.7 |
-| 1.1.3.4.8 | Implement news preview functionality | 1.1.3.4.2 |
+### 1.1.2.4 Superadmin Management ✅
+| Task ID | Task Description | Dependencies | Status |
+|---------|------------------|--------------|--------|
+| 1.1.2.4.1 | Create superadmin user schema with roles | 1.1.1.2.3 | ✅ |
+| 1.1.2.4.2 | Build superadmin creation script (initial setup) | 1.1.2.4.1 | ✅ |
+| 1.1.2.4.3 | Create admin user listing page | 1.1.2.3.5 | ✅ |
+| 1.1.2.4.4 | Build admin user creation form | 1.1.2.3.6 | ✅ |
+| 1.1.2.4.5 | Implement admin user edit functionality | 1.1.2.4.4 | ✅ |
+| 1.1.2.4.6 | Implement admin user deactivation | 1.1.2.4.3 | ✅ |
+| 1.1.2.4.7 | Create activity log schema | 1.1.1.2.2 | ✅ |
+| 1.1.2.4.8 | Implement admin activity logging | 1.1.2.4.7 | ✅ |
+| 1.1.2.4.9 | Build activity log viewer | 1.1.2.4.8 | ✅ |
 
 ---
 
-## 1.1.4 Company Contact Directory
+## 1.1.3 News & Announcements ✅
 
-### 1.1.4.1 Backend Development
-| Task ID | Task Description | Dependencies |
-|---------|------------------|--------------|
-| 1.1.4.1.1 | Finalize Contact schema (name, phone, email, dept, position, photo) | 1.1.1.2.5 |
-| 1.1.4.1.2 | Create Department schema | 1.1.1.2.2 |
-| 1.1.4.1.3 | Create GET /api/contacts endpoint (with filters) | 1.1.4.1.1 |
-| 1.1.4.1.4 | Create GET /api/contacts/:id endpoint | 1.1.4.1.1 |
-| 1.1.4.1.5 | Create GET /api/departments endpoint | 1.1.4.1.2 |
-| 1.1.4.1.6 | Create POST /api/admin/contacts endpoint | 1.1.4.1.1, 1.1.2.2.3 |
-| 1.1.4.1.7 | Create PUT /api/admin/contacts/:id endpoint | 1.1.4.1.1, 1.1.2.2.3 |
-| 1.1.4.1.8 | Create DELETE /api/admin/contacts/:id endpoint | 1.1.4.1.1, 1.1.2.2.3 |
-| 1.1.4.1.9 | Implement contact search (name, dept, position) | 1.1.4.1.3 |
-| 1.1.4.1.10 | Create bulk import endpoint (CSV) | 1.1.4.1.6 |
+### 1.1.3.1 Backend Development ✅
+| Task ID | Task Description | Dependencies | Status |
+|---------|------------------|--------------|--------|
+| 1.1.3.1.1 | Finalize News schema (title, content, category, author, dates, status) | 1.1.1.2.4 | ✅ |
+| 1.1.3.1.2 | Create GET /api/news endpoint (public, with pagination) | 1.1.3.1.1 | ✅ |
+| 1.1.3.1.3 | Create GET /api/news/:id endpoint (single news) | 1.1.3.1.1 | ✅ |
+| 1.1.3.1.4 | Create POST /api/admin/news endpoint (create) | 1.1.3.1.1, 1.1.2.2.3 | ✅ |
+| 1.1.3.1.5 | Create PUT /api/admin/news/:id endpoint (update) | 1.1.3.1.1, 1.1.2.2.3 | ✅ |
+| 1.1.3.1.6 | Create DELETE /api/admin/news/:id endpoint | 1.1.3.1.1, 1.1.2.2.3 | ✅ |
+| 1.1.3.1.7 | Implement news category management | 1.1.3.1.1 | ✅ |
+| 1.1.3.1.8 | Implement news search and filtering | 1.1.3.1.2 | ✅ |
+| 1.1.3.1.9 | Add featured/pinned news functionality | 1.1.3.1.1 | ✅ |
+| 1.1.3.1.10 | Implement news scheduling (publish date) | 1.1.3.1.1 | ✅ |
 
-### 1.1.4.2 Public Directory UI
-| Task ID | Task Description | Dependencies |
-|---------|------------------|--------------|
-| 1.1.4.2.1 | Create directory listing page | 1.1.4.1.3 |
-| 1.1.4.2.2 | Build contact card component | 1.1.4.2.1 |
-| 1.1.4.2.3 | Implement department filter dropdown | 1.1.4.1.5 |
-| 1.1.4.2.4 | Create search bar with live search | 1.1.4.1.9 |
-| 1.1.4.2.5 | Add alphabetical quick-jump navigation | 1.1.4.2.1 |
-| 1.1.4.2.6 | Create contact detail modal/page | 1.1.4.1.4 |
-| 1.1.4.2.7 | Implement click-to-call functionality (mobile) | 1.1.4.2.2 |
-| 1.1.4.2.8 | Add homepage directory quick search widget | 1.1.1.3.10 |
+### 1.1.3.2 Image Upload System ✅
+| Task ID | Task Description | Dependencies | Status |
+|---------|------------------|--------------|--------|
+| 1.1.3.2.1 | Set up file upload middleware (multer) | 1.1.1.1.1 | ✅ |
+| 1.1.3.2.2 | Create uploads directory structure | 1.1.3.2.1 | ✅ |
+| 1.1.3.2.3 | Implement image upload API endpoint | 1.1.3.2.1 | ✅ |
+| 1.1.3.2.4 | Add image validation (type, size limits) | 1.1.3.2.3 | ✅ |
+| 1.1.3.2.5 | Implement image compression/optimization | 1.1.3.2.3 | ✅ |
+| 1.1.3.2.6 | Create image deletion functionality | 1.1.3.2.3 | ✅ |
+| 1.1.3.2.7 | Set up static file serving for uploads | 1.1.3.2.2 | ✅ |
 
-### 1.1.4.3 Admin Directory Management
-| Task ID | Task Description | Dependencies |
-|---------|------------------|--------------|
-| 1.1.4.3.1 | Create admin contacts listing page | 1.1.2.3.5, 1.1.4.1.3 |
-| 1.1.4.3.2 | Build contact creation form | 1.1.2.3.6 |
-| 1.1.4.3.3 | Integrate photo upload for contacts | 1.1.3.2.3, 1.1.4.3.2 |
-| 1.1.4.3.4 | Create contact edit page | 1.1.4.3.2 |
-| 1.1.4.3.5 | Implement contact delete | 1.1.4.3.1 |
-| 1.1.4.3.6 | Create department management page | 1.1.4.1.2 |
-| 1.1.4.3.7 | Build CSV import interface | 1.1.4.1.10 |
-| 1.1.4.3.8 | Create CSV template download | 1.1.4.3.7 |
+### 1.1.3.3 Public News UI ✅
+| Task ID | Task Description | Dependencies | Status |
+|---------|------------------|--------------|--------|
+| 1.1.3.3.1 | Create news listing page | 1.1.3.1.2 | ✅ |
+| 1.1.3.3.2 | Build news card component | 1.1.3.3.1 | ✅ |
+| 1.1.3.3.3 | Implement news category filter tabs | 1.1.3.3.1 | ✅ |
+| 1.1.3.3.4 | Create single news detail page | 1.1.3.1.3 | ✅ |
+| 1.1.3.3.5 | Add news image carousel (if multiple images) | 1.1.3.3.4 | ✅ |
+| 1.1.3.3.6 | Implement related news section | 1.1.3.3.4 | ✅ |
+| 1.1.3.3.7 | Create news search functionality | 1.1.3.1.8 | ✅ |
+| 1.1.3.3.8 | Add homepage news widget/section | 1.1.1.3.10 | ✅ |
+| 1.1.3.3.9 | Implement infinite scroll or pagination | 1.1.3.3.1 | ✅ |
+
+### 1.1.3.4 Admin News Management ✅
+| Task ID | Task Description | Dependencies | Status |
+|---------|------------------|--------------|--------|
+| 1.1.3.4.1 | Create admin news listing page | 1.1.2.3.5, 1.1.3.1.2 | ✅ |
+| 1.1.3.4.2 | Build news creation form with rich text editor | 1.1.2.3.6 | ✅ |
+| 1.1.3.4.3 | Integrate image upload in news form | 1.1.3.2.3, 1.1.3.4.2 | ✅ |
+| 1.1.3.4.4 | Create news edit page | 1.1.3.4.2 | ✅ |
+| 1.1.3.4.5 | Implement news delete with confirmation | 1.1.2.3.7 | ✅ |
+| 1.1.3.4.6 | Add publish/unpublish toggle | 1.1.3.4.1 | ✅ |
+| 1.1.3.4.7 | Create category management page | 1.1.3.1.7 | ✅ |
+| 1.1.3.4.8 | Implement news preview functionality | 1.1.3.4.2 | ✅ |
 
 ---
 
-## 1.1.5 Company Apps Links
+## 1.1.4 Company Contact Directory ✅
 
-### 1.1.5.1 Backend Development
-| Task ID | Task Description | Dependencies |
-|---------|------------------|--------------|
-| 1.1.5.1.1 | Finalize AppLink schema (name, url, icon, description, category) | 1.1.1.2.6 |
-| 1.1.5.1.2 | Create GET /api/app-links endpoint | 1.1.5.1.1 |
-| 1.1.5.1.3 | Create CRUD endpoints for admin | 1.1.5.1.1, 1.1.2.2.3 |
-| 1.1.5.1.4 | Implement app link ordering/sorting | 1.1.5.1.1 |
+### 1.1.4.1 Backend Development ✅
+| Task ID | Task Description | Dependencies | Status |
+|---------|------------------|--------------|--------|
+| 1.1.4.1.1 | Finalize Contact schema (name, phone, email, dept, position, photo) | 1.1.1.2.5 | ✅ |
+| 1.1.4.1.2 | Create Department schema | 1.1.1.2.2 | ✅ |
+| 1.1.4.1.3 | Create GET /api/contacts endpoint (with filters) | 1.1.4.1.1 | ✅ |
+| 1.1.4.1.4 | Create GET /api/contacts/:id endpoint | 1.1.4.1.1 | ✅ |
+| 1.1.4.1.5 | Create GET /api/departments endpoint | 1.1.4.1.2 | ✅ |
+| 1.1.4.1.6 | Create POST /api/admin/contacts endpoint | 1.1.4.1.1, 1.1.2.2.3 | ✅ |
+| 1.1.4.1.7 | Create PUT /api/admin/contacts/:id endpoint | 1.1.4.1.1, 1.1.2.2.3 | ✅ |
+| 1.1.4.1.8 | Create DELETE /api/admin/contacts/:id endpoint | 1.1.4.1.1, 1.1.2.2.3 | ✅ |
+| 1.1.4.1.9 | Implement contact search (name, dept, position) | 1.1.4.1.3 | ✅ |
+| 1.1.4.1.10 | Create bulk import endpoint (CSV) | 1.1.4.1.6 | ✅ |
 
-### 1.1.5.2 Public Apps Page
-| Task ID | Task Description | Dependencies |
-|---------|------------------|--------------|
-| 1.1.5.2.1 | Create apps listing page | 1.1.5.1.2 |
-| 1.1.5.2.2 | Build app link card component with icon | 1.1.5.2.1 |
-| 1.1.5.2.3 | Implement category grouping | 1.1.5.2.1 |
-| 1.1.5.2.4 | Add search/filter functionality | 1.1.5.2.1 |
-| 1.1.5.2.5 | Add homepage quick links widget | 1.1.1.3.10 |
+### 1.1.4.2 Public Directory UI ✅
+| Task ID | Task Description | Dependencies | Status |
+|---------|------------------|--------------|--------|
+| 1.1.4.2.1 | Create directory listing page | 1.1.4.1.3 | ✅ |
+| 1.1.4.2.2 | Build contact card component | 1.1.4.2.1 | ✅ |
+| 1.1.4.2.3 | Implement department filter dropdown | 1.1.4.1.5 | ✅ |
+| 1.1.4.2.4 | Create search bar with live search | 1.1.4.1.9 | ✅ |
+| 1.1.4.2.5 | Add alphabetical quick-jump navigation | 1.1.4.2.1 | ✅ |
+| 1.1.4.2.6 | Create contact detail modal/page | 1.1.4.1.4 | ✅ |
+| 1.1.4.2.7 | Implement click-to-call functionality (mobile) | 1.1.4.2.2 | ✅ |
+| 1.1.4.2.8 | Add homepage directory quick search widget | 1.1.1.3.10 | ✅ |
 
-### 1.1.5.3 Admin Apps Management
-| Task ID | Task Description | Dependencies |
-|---------|------------------|--------------|
-| 1.1.5.3.1 | Create admin app links listing page | 1.1.2.3.5 |
-| 1.1.5.3.2 | Build app link creation form | 1.1.2.3.6 |
-| 1.1.5.3.3 | Integrate icon upload/selection | 1.1.5.3.2 |
-| 1.1.5.3.4 | Implement drag-and-drop reordering | 1.1.5.3.1 |
-| 1.1.5.3.5 | Create edit and delete functionality | 1.1.5.3.1 |
+### 1.1.4.3 Admin Directory Management ✅
+| Task ID | Task Description | Dependencies | Status |
+|---------|------------------|--------------|--------|
+| 1.1.4.3.1 | Create admin contacts listing page | 1.1.2.3.5, 1.1.4.1.3 | ✅ |
+| 1.1.4.3.2 | Build contact creation form | 1.1.2.3.6 | ✅ |
+| 1.1.4.3.3 | Integrate photo upload for contacts | 1.1.3.2.3, 1.1.4.3.2 | ✅ |
+| 1.1.4.3.4 | Create contact edit page | 1.1.4.3.2 | ✅ |
+| 1.1.4.3.5 | Implement contact delete | 1.1.4.3.1 | ✅ |
+| 1.1.4.3.6 | Create department management page | 1.1.4.1.2 | ✅ |
+| 1.1.4.3.7 | Build CSV import interface | 1.1.4.1.10 | ✅ |
+| 1.1.4.3.8 | Create CSV template download | 1.1.4.3.7 | ✅ |
+
+---
+
+## 1.1.5 Company Apps Links ✅
+
+### 1.1.5.1 Backend Development ✅
+| Task ID | Task Description | Dependencies | Status |
+|---------|------------------|--------------|--------|
+| 1.1.5.1.1 | Finalize AppLink schema (name, url, icon, description, category) | 1.1.1.2.6 | ✅ |
+| 1.1.5.1.2 | Create GET /api/app-links endpoint | 1.1.5.1.1 | ✅ |
+| 1.1.5.1.3 | Create CRUD endpoints for admin | 1.1.5.1.1, 1.1.2.2.3 | ✅ |
+| 1.1.5.1.4 | Implement app link ordering/sorting | 1.1.5.1.1 | ✅ |
+
+### 1.1.5.2 Public Apps Page ✅
+| Task ID | Task Description | Dependencies | Status |
+|---------|------------------|--------------|--------|
+| 1.1.5.2.1 | Create apps listing page | 1.1.5.1.2 | ✅ |
+| 1.1.5.2.2 | Build app link card component with icon | 1.1.5.2.1 | ✅ |
+| 1.1.5.2.3 | Implement category grouping | 1.1.5.2.1 | ✅ |
+| 1.1.5.2.4 | Add search/filter functionality | 1.1.5.2.1 | ✅ |
+| 1.1.5.2.5 | Add homepage quick links widget | 1.1.1.3.10 | ✅ |
+
+### 1.1.5.3 Admin Apps Management ✅
+| Task ID | Task Description | Dependencies | Status |
+|---------|------------------|--------------|--------|
+| 1.1.5.3.1 | Create admin app links listing page | 1.1.2.3.5 | ✅ |
+| 1.1.5.3.2 | Build app link creation form | 1.1.2.3.6 | ✅ |
+| 1.1.5.3.3 | Integrate icon upload/selection | 1.1.5.3.2 | ✅ |
+| 1.1.5.3.4 | Implement drag-and-drop reordering | 1.1.5.3.1 | ✅ |
+| 1.1.5.3.5 | Create edit and delete functionality | 1.1.5.3.1 | ✅ |
 
 ---
 
 # 1.2 PHASE 2: Safety & Daily Operations
 
-## 1.2.1 Daily Toolbox Talk
+## 1.2.1 Daily Toolbox Talk ✅
 
-### 1.2.1.1 Backend Development
-| Task ID | Task Description | Dependencies |
-|---------|------------------|--------------|
-| 1.2.1.1.1 | Create ToolboxTalk schema (title, content, date, media, author) | 1.1.1.2.2 |
-| 1.2.1.1.2 | Create GET /api/toolbox-talks endpoint (with date filter) | 1.2.1.1.1 |
-| 1.2.1.1.3 | Create GET /api/toolbox-talks/today endpoint | 1.2.1.1.1 |
-| 1.2.1.1.4 | Create GET /api/toolbox-talks/:id endpoint | 1.2.1.1.1 |
-| 1.2.1.1.5 | Create CRUD endpoints for admin | 1.2.1.1.1, 1.1.2.2.3 |
-| 1.2.1.1.6 | Implement toolbox talk scheduling | 1.2.1.1.1 |
-| 1.2.1.1.7 | Create toolbox talk archive functionality | 1.2.1.1.2 |
+### 1.2.1.1 Backend Development ✅
+| Task ID | Task Description | Dependencies | Status |
+|---------|------------------|--------------|--------|
+| 1.2.1.1.1 | Create ToolboxTalk schema (title, content, date, media, author) | 1.1.1.2.2 | ✅ |
+| 1.2.1.1.2 | Create GET /api/toolbox-talks endpoint (with date filter) | 1.2.1.1.1 | ✅ |
+| 1.2.1.1.3 | Create GET /api/toolbox-talks/today endpoint | 1.2.1.1.1 | ✅ |
+| 1.2.1.1.4 | Create GET /api/toolbox-talks/:id endpoint | 1.2.1.1.1 | ✅ |
+| 1.2.1.1.5 | Create CRUD endpoints for admin | 1.2.1.1.1, 1.1.2.2.3 | ✅ |
+| 1.2.1.1.6 | Implement toolbox talk scheduling | 1.2.1.1.1 | ✅ |
+| 1.2.1.1.7 | Create toolbox talk archive functionality | 1.2.1.1.2 | ✅ |
 
-### 1.2.1.2 Multimedia Support
-| Task ID | Task Description | Dependencies |
-|---------|------------------|--------------|
-| 1.2.1.2.1 | Extend upload system for video files | 1.1.3.2.1 |
-| 1.2.1.2.2 | Implement video file validation (type, size, duration) | 1.2.1.2.1 |
-| 1.2.1.2.3 | Create audio file upload support | 1.2.1.2.1 |
-| 1.2.1.2.4 | Implement video thumbnail generation | 1.2.1.2.1 |
-| 1.2.1.2.5 | Create video player component | 1.2.1.2.1 |
-| 1.2.1.2.6 | Create audio player component | 1.2.1.2.3 |
+### 1.2.1.2 Multimedia Support ✅
+| Task ID | Task Description | Dependencies | Status |
+|---------|------------------|--------------|--------|
+| 1.2.1.2.1 | Extend upload system for video files | 1.1.3.2.1 | ✅ |
+| 1.2.1.2.2 | Implement video file validation (type, size, duration) | 1.2.1.2.1 | ✅ |
+| 1.2.1.2.3 | Create audio file upload support | 1.2.1.2.1 | ✅ |
+| 1.2.1.2.4 | Implement video thumbnail generation | 1.2.1.2.1 | ⏳ |
+| 1.2.1.2.5 | Create video player component | 1.2.1.2.1 | ✅ |
+| 1.2.1.2.6 | Create audio player component | 1.2.1.2.3 | ✅ |
 
-### 1.2.1.3 Public Toolbox Talk UI
-| Task ID | Task Description | Dependencies |
-|---------|------------------|--------------|
-| 1.2.1.3.1 | Create toolbox talk page with today's talk prominent | 1.2.1.1.3 |
-| 1.2.1.3.2 | Build toolbox talk card component | 1.2.1.3.1 |
-| 1.2.1.3.3 | Integrate video player in talk view | 1.2.1.2.5 |
-| 1.2.1.3.4 | Integrate audio player in talk view | 1.2.1.2.6 |
-| 1.2.1.3.5 | Create calendar/archive view for past talks | 1.2.1.1.7 |
-| 1.2.1.3.6 | Add homepage "Today's Toolbox Talk" widget | 1.1.1.3.10 |
-| 1.2.1.3.7 | Implement date picker for archive browsing | 1.2.1.3.5 |
+### 1.2.1.3 Public Toolbox Talk UI ✅
+| Task ID | Task Description | Dependencies | Status |
+|---------|------------------|--------------|--------|
+| 1.2.1.3.1 | Create toolbox talk page with today's talk prominent | 1.2.1.1.3 | ✅ |
+| 1.2.1.3.2 | Build toolbox talk card component | 1.2.1.3.1 | ✅ |
+| 1.2.1.3.3 | Integrate video player in talk view | 1.2.1.2.5 | ✅ |
+| 1.2.1.3.4 | Integrate audio player in talk view | 1.2.1.2.6 | ✅ |
+| 1.2.1.3.5 | Create calendar/archive view for past talks | 1.2.1.1.7 | ✅ |
+| 1.2.1.3.6 | Add homepage "Today's Toolbox Talk" widget | 1.1.1.3.10 | ⏳ |
+| 1.2.1.3.7 | Implement date picker for archive browsing | 1.2.1.3.5 | ✅ |
 
-### 1.2.1.4 Admin Toolbox Talk Management
-| Task ID | Task Description | Dependencies |
-|---------|------------------|--------------|
-| 1.2.1.4.1 | Create admin toolbox talk listing page | 1.1.2.3.5 |
-| 1.2.1.4.2 | Build toolbox talk creation form | 1.1.2.3.6 |
-| 1.2.1.4.3 | Integrate multimedia upload in form | 1.2.1.2.1-3 |
-| 1.2.1.4.4 | Create talk scheduling interface | 1.2.1.1.6 |
-| 1.2.1.4.5 | Implement edit and delete functionality | 1.2.1.4.1 |
-| 1.2.1.4.6 | Add calendar view for scheduled talks | 1.2.1.4.4 |
+### 1.2.1.4 Admin Toolbox Talk Management ✅
+| Task ID | Task Description | Dependencies | Status |
+|---------|------------------|--------------|--------|
+| 1.2.1.4.1 | Create admin toolbox talk listing page | 1.1.2.3.5 | ✅ |
+| 1.2.1.4.2 | Build toolbox talk creation form | 1.1.2.3.6 | ✅ |
+| 1.2.1.4.3 | Integrate multimedia upload in form | 1.2.1.2.1-3 | ✅ |
+| 1.2.1.4.4 | Create talk scheduling interface | 1.2.1.1.6 | ✅ |
+| 1.2.1.4.5 | Implement edit and delete functionality | 1.2.1.4.1 | ✅ |
+| 1.2.1.4.6 | Add calendar view for scheduled talks | 1.2.1.4.4 | ⏳ |
 
 ---
 
