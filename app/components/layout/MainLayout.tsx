@@ -1,21 +1,22 @@
 import { Header } from "./Header";
 import { Footer } from "./Footer";
-import type { ReactNode } from "react";
+import { LeftSidebar } from "./LeftSidebar";
+import { RightSidebar } from "./RightSidebar";
 
 interface MainLayoutProps {
-  children: ReactNode;
+  children: React.ReactNode;
+  showSidebars?: boolean;
 }
 
-/**
- * Main Layout Component
- * Wraps all public pages with header and footer
- * Task: 1.1.1.3.1
- */
-export function MainLayout({ children }: MainLayoutProps) {
+export function MainLayout({ children, showSidebars = true }: MainLayoutProps) {
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50">
+    <div className="flex min-h-screen flex-col bg-gray-100">
       <Header />
-      <main className="flex-1">{children}</main>
+      <div className="mx-auto flex w-full max-w-[1600px] flex-1 gap-6 px-4 py-6">
+        {showSidebars && <LeftSidebar />}
+        <main className="min-w-0 flex-1">{children}</main>
+        {showSidebars && <RightSidebar />}
+      </div>
       <Footer />
     </div>
   );

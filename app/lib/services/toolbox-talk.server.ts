@@ -1,0 +1,457 @@
+/**
+ * Toolbox Talk Service
+ * Task: 1.2.1.1.2-7 (Backend Development)
+ */
+
+import { ToolboxTalk, type IToolboxTalk, type IMediaItem } from "~/lib/db/models/toolbox-talk.server";
+
+// ============================================
+// Input Types
+// ============================================
+
+export interface ToolboxTalkInput {
+  title: string;
+  slug: string;
+  content: string;
+  summary?: string;
+  author: string;
+  media?: IMediaItem[];
+  featuredMedia?: IMediaItem;
+  scheduledDate: Date;
+  status?: "draft" | "published" | "archived";
+  tags?: string[];
+}
+
+// ============================================
+// CRUD Operations
+// ============================================
+
+export async function createToolboxTalk(data: ToolboxTalkInput): Promise<IToolboxTalk> {
+  const talk = new ToolboxTalk(data);
+  await talk.save();
+  return talk.populate("author");
+}
+
+export async function updateToolboxTalk(
+  id: string,
+  data: Partial<ToolboxTalkInput>
+): Promise<IToolboxTalk | null> {
+  const talk = await ToolboxTalk.findByIdAndUpdate(id, data, { new: true });
+  return talk?.populate("author") || null;
+}
+
+export async function deleteToolboxTalk(id: string): Promise<boolean> {
+  const result = await ToolboxTalk.findByIdAndDelete(id);
+  return !!result;
+}
+
+export async function getToolboxTalkById(id: string): Promise<IToolboxTalk | null> {
+  return ToolboxTalk.findById(id).populate("author");
+}
+
+export async function getToolboxTalkBySlug(slug: string): Promise<IToolboxTalk | null> {
+  return ToolboxTalk.findOne({ slug: slug.toLowerCase() }).populate("author");
+}
+
+// ============================================
+// Task: 1.2.1.1.3 - GET /api/toolbox-talks/today endpoint
+// ============================================
+
+export async function getTodaysToolboxTalk(): Promise<IToolboxTalk | null> {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  // Find a published talk scheduled for today
+  return ToolboxTalk.findOne({
+    status: "published",
+    scheduledDate: {
+      $gte: today,
+      $lt: tomorrow,
+    },
+  }).populate("author");
+}
+
+// ============================================
+// Task: 1.2.1.1.2 - GET /api/toolbox-talks endpoint (with date filter)
+// ============================================
+
+export interface GetToolboxTalksOptions {
+  status?: "draft" | "published" | "archived";
+  includeAll?: boolean;
+  startDate?: Date;
+  endDate?: Date;
+  tags?: string[];
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface PaginatedToolboxTalks {
+  talks: IToolboxTalk[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
+export async function getToolboxTalks(options: GetToolboxTalksOptions = {}): Promise<PaginatedToolboxTalks> {
+  const filter: Record<string, unknown> = {};
+  const page = options.page || 1;
+  const limit = options.limit || 20;
+
+  // Status filter
+  if (!options.includeAll) {
+    filter.status = options.status || "published";
+  } else if (options.status) {
+    filter.status = options.status;
+  }
+
+  // Date range filter
+  if (options.startDate || options.endDate) {
+    filter.scheduledDate = {};
+    if (options.startDate) {
+      (filter.scheduledDate as Record<string, Date>).$gte = options.startDate;
+    }
+    if (options.endDate) {
+      (filter.scheduledDate as Record<string, Date>).$lte = options.endDate;
+    }
+  }
+
+  // Tags filter
+  if (options.tags && options.tags.length > 0) {
+    filter.tags = { $in: options.tags };
+  }
+
+  // Search filter
+  if (options.search) {
+    filter.$or = [
+      { title: { $regex: options.search, $options: "i" } },
+      { content: { $regex: options.search, $options: "i" } },
+      { summary: { $regex: options.search, $options: "i" } },
+    ];
+  }
+
+  const [talks, total] = await Promise.all([
+    ToolboxTalk.find(filter)
+      .populate("author")
+      .sort({ scheduledDate: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit),
+    ToolboxTalk.countDocuments(filter),
+  ]);
+
+  return {
+    talks,
+    total,
+    page,
+    totalPages: Math.ceil(total / limit),
+  };
+}
+
+// ============================================
+// Task: 1.2.1.1.7 - Create toolbox talk archive functionality
+// ============================================
+
+export async function getToolboxTalkArchive(options: {
+  year?: number;
+  month?: number;
+  page?: number;
+  limit?: number;
+}): Promise<PaginatedToolboxTalks> {
+  const { year, month, page = 1, limit = 20 } = options;
+
+  let startDate: Date | undefined;
+  let endDate: Date | undefined;
+
+  if (year) {
+    startDate = new Date(year, month !== undefined ? month - 1 : 0, 1);
+    endDate = month !== undefined
+      ? new Date(year, month, 0, 23, 59, 59) // Last day of the month
+      : new Date(year, 11, 31, 23, 59, 59); // Last day of the year
+  }
+
+  return getToolboxTalks({
+    status: "published",
+    startDate,
+    endDate,
+    page,
+    limit,
+  });
+}
+
+// Get archive months with counts (for calendar/navigation)
+export async function getArchiveMonths(): Promise<Array<{
+  year: number;
+  month: number;
+  count: number;
+}>> {
+  const result = await ToolboxTalk.aggregate([
+    { $match: { status: "published" } },
+    {
+      $group: {
+        _id: {
+          year: { $year: "$scheduledDate" },
+          month: { $month: "$scheduledDate" },
+        },
+        count: { $sum: 1 },
+      },
+    },
+    { $sort: { "_id.year": -1, "_id.month": -1 } },
+    {
+      $project: {
+        _id: 0,
+        year: "$_id.year",
+        month: "$_id.month",
+        count: 1,
+      },
+    },
+  ]);
+
+  return result;
+}
+
+// ============================================
+// Task: 1.2.1.1.6 - Implement toolbox talk scheduling
+// ============================================
+
+export async function scheduleToolboxTalk(
+  id: string,
+  scheduledDate: Date
+): Promise<IToolboxTalk | null> {
+  return ToolboxTalk.findByIdAndUpdate(
+    id,
+    { scheduledDate, status: "published" },
+    { new: true }
+  ).populate("author");
+}
+
+// Get upcoming scheduled talks
+export async function getUpcomingToolboxTalks(limit = 7): Promise<IToolboxTalk[]> {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return ToolboxTalk.find({
+    status: "published",
+    scheduledDate: { $gte: today },
+  })
+    .populate("author")
+    .sort({ scheduledDate: 1 })
+    .limit(limit);
+}
+
+// Get past talks
+export async function getPastToolboxTalks(limit = 10): Promise<IToolboxTalk[]> {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return ToolboxTalk.find({
+    status: "published",
+    scheduledDate: { $lt: today },
+  })
+    .populate("author")
+    .sort({ scheduledDate: -1 })
+    .limit(limit);
+}
+
+// ============================================
+// Utilities
+// ============================================
+
+export async function incrementViews(id: string): Promise<void> {
+  await ToolboxTalk.findByIdAndUpdate(id, { $inc: { views: 1 } });
+}
+
+export async function getToolboxTalkStats(): Promise<{
+  total: number;
+  published: number;
+  draft: number;
+  archived: number;
+  thisMonth: number;
+  totalViews: number;
+}> {
+  const thisMonth = new Date();
+  thisMonth.setDate(1);
+  thisMonth.setHours(0, 0, 0, 0);
+
+  const [total, published, draft, archived, thisMonthCount, viewsResult] = await Promise.all([
+    ToolboxTalk.countDocuments(),
+    ToolboxTalk.countDocuments({ status: "published" }),
+    ToolboxTalk.countDocuments({ status: "draft" }),
+    ToolboxTalk.countDocuments({ status: "archived" }),
+    ToolboxTalk.countDocuments({
+      status: "published",
+      scheduledDate: { $gte: thisMonth },
+    }),
+    ToolboxTalk.aggregate([
+      { $group: { _id: null, totalViews: { $sum: "$views" } } },
+    ]),
+  ]);
+
+  return {
+    total,
+    published,
+    draft,
+    archived,
+    thisMonth: thisMonthCount,
+    totalViews: viewsResult[0]?.totalViews || 0,
+  };
+}
+
+// Generate unique slug
+export async function generateUniqueSlug(title: string): Promise<string> {
+  let slug = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  // Check if slug exists
+  let counter = 0;
+  let uniqueSlug = slug;
+
+  while (await ToolboxTalk.findOne({ slug: uniqueSlug })) {
+    counter++;
+    uniqueSlug = `${slug}-${counter}`;
+  }
+
+  return uniqueSlug;
+}
+
+// Get talks by date range (for calendar views)
+export async function getToolboxTalksByDateRange(
+  startDate: Date,
+  endDate: Date
+): Promise<IToolboxTalk[]> {
+  return ToolboxTalk.find({
+    status: "published",
+    scheduledDate: {
+      $gte: startDate,
+      $lte: endDate,
+    },
+  })
+    .populate("author")
+    .sort({ scheduledDate: 1 });
+}
+
+// Check if a talk exists for a specific date
+export async function hasToolboxTalkForDate(date: Date): Promise<boolean> {
+  const dayStart = new Date(date);
+  dayStart.setHours(0, 0, 0, 0);
+
+  const dayEnd = new Date(dayStart);
+  dayEnd.setDate(dayEnd.getDate() + 1);
+
+  const count = await ToolboxTalk.countDocuments({
+    status: "published",
+    scheduledDate: {
+      $gte: dayStart,
+      $lt: dayEnd,
+    },
+  });
+
+  return count > 0;
+}
+
+// ============================================
+// Navigation - Get Adjacent Talks
+// ============================================
+
+export interface AdjacentTalk {
+  slug: string;
+  title: string;
+}
+
+export interface AdjacentTalks {
+  prev: AdjacentTalk | null;
+  next: AdjacentTalk | null;
+}
+
+export async function getAdjacentToolboxTalks(scheduledDate: Date): Promise<AdjacentTalks> {
+  const [prevTalk, nextTalk] = await Promise.all([
+    ToolboxTalk.findOne({
+      status: "published",
+      scheduledDate: { $lt: scheduledDate },
+    })
+      .sort({ scheduledDate: -1 })
+      .select("slug title")
+      .lean(),
+    ToolboxTalk.findOne({
+      status: "published",
+      scheduledDate: { $gt: scheduledDate },
+    })
+      .sort({ scheduledDate: 1 })
+      .select("slug title")
+      .lean(),
+  ]);
+
+  return {
+    prev: prevTalk ? { slug: prevTalk.slug, title: prevTalk.title } : null,
+    next: nextTalk ? { slug: nextTalk.slug, title: nextTalk.title } : null,
+  };
+}
+
+// ============================================
+// Admin - Toggle Status
+// ============================================
+
+export async function toggleToolboxTalkStatus(id: string): Promise<IToolboxTalk | null> {
+  const talk = await ToolboxTalk.findById(id);
+  if (!talk) return null;
+
+  talk.status = talk.status === "published" ? "draft" : "published";
+  await talk.save();
+  return talk;
+}
+
+export async function archiveToolboxTalk(id: string): Promise<IToolboxTalk | null> {
+  return ToolboxTalk.findByIdAndUpdate(
+    id,
+    { status: "archived" },
+    { new: true }
+  );
+}
+
+// ============================================
+// Serialization Helpers (for JSON responses)
+// ============================================
+
+export interface SerializedToolboxTalk {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  summary: string;
+  featuredMedia: IMediaItem | null;
+  media: IMediaItem[];
+  scheduledDate: string;
+  status: string;
+  tags: string[];
+  views: number;
+  author: { name: string } | null;
+  createdAt?: string;
+}
+
+export function serializeToolboxTalk(talk: IToolboxTalk): SerializedToolboxTalk {
+  return {
+    id: talk._id.toString(),
+    title: talk.title,
+    slug: talk.slug,
+    content: talk.content,
+    summary: talk.summary || talk.content.substring(0, 150) + "...",
+    featuredMedia: talk.featuredMedia || null,
+    media: talk.media || [],
+    scheduledDate: talk.scheduledDate.toISOString(),
+    status: talk.status,
+    tags: talk.tags || [],
+    views: talk.views,
+    author: talk.author
+      ? { name: (talk.author as { name?: string }).name || "Unknown" }
+      : null,
+    createdAt: talk.createdAt?.toISOString(),
+  };
+}
+
+export function serializeToolboxTalkList(talks: IToolboxTalk[]): SerializedToolboxTalk[] {
+  return talks.map(serializeToolboxTalk);
+}

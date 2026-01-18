@@ -6,81 +6,52 @@ interface LoadingSpinnerProps {
   fullScreen?: boolean;
 }
 
-/**
- * Loading Spinner Component
- * Task: 1.1.1.3.7
- */
 export function LoadingSpinner({
-  size = "md",
+  size = "lg",
   label = "Loading...",
   fullScreen = false,
 }: LoadingSpinnerProps) {
+  const content = (
+    <div className="flex flex-col items-center justify-center gap-4">
+      <Spinner
+        size={size}
+        color="warning"
+        classNames={{
+          circle1: "border-b-gold-500",
+          circle2: "border-b-gold-300",
+        }}
+      />
+      {label && <p className="text-sm text-gray-500">{label}</p>}
+    </div>
+  );
+
   if (fullScreen) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Spinner size={size} color="warning" />
-          <p className="mt-4 text-sm text-gray-600">{label}</p>
-        </div>
+        {content}
       </div>
     );
   }
 
-  return (
-    <div className="flex items-center justify-center py-8">
-      <div className="text-center">
-        <Spinner size={size} color="warning" />
-        {label && <p className="mt-2 text-sm text-gray-600">{label}</p>}
-      </div>
-    </div>
-  );
+  return content;
 }
 
-/**
- * Skeleton Loading Component
- */
-interface SkeletonProps {
-  className?: string;
-}
-
-export function Skeleton({ className = "" }: SkeletonProps) {
+export function LoadingSkeleton({ className = "" }: { className?: string }) {
   return (
     <div
-      className={`animate-shimmer rounded bg-gray-200 ${className}`}
+      className={`animate-pulse rounded-lg bg-gray-200 ${className}`}
       aria-hidden="true"
     />
   );
 }
 
-/**
- * Card Skeleton for loading states
- */
 export function CardSkeleton() {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4">
-      <div className="flex items-center gap-3">
-        <Skeleton className="h-10 w-10 rounded-lg" />
-        <div className="flex-1">
-          <Skeleton className="mb-2 h-4 w-3/4" />
-          <Skeleton className="h-3 w-1/2" />
-        </div>
-      </div>
-      <Skeleton className="mt-4 h-20 w-full" />
+    <div className="rounded-xl bg-white p-4 shadow-sm">
+      <LoadingSkeleton className="mb-4 h-40 w-full" />
+      <LoadingSkeleton className="mb-2 h-4 w-3/4" />
+      <LoadingSkeleton className="mb-2 h-4 w-1/2" />
+      <LoadingSkeleton className="h-4 w-1/4" />
     </div>
-  );
-}
-
-/**
- * Table Row Skeleton
- */
-export function TableRowSkeleton({ columns = 4 }: { columns?: number }) {
-  return (
-    <tr>
-      {Array.from({ length: columns }).map((_, i) => (
-        <td key={i} className="px-4 py-3">
-          <Skeleton className="h-4 w-full" />
-        </td>
-      ))}
-    </tr>
   );
 }

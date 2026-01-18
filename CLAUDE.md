@@ -4,76 +4,76 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ARL Intranet is a full-stack React Router v7 application for Adamus Resources Limited, a mining company. It uses server-side rendering (SSR) with Vite as the build tool.
+ARL Intranet (ARL Connect) - Internal intranet portal for Adamus Resources Limited, a mining company in Ghana. This is a full-stack React Router v7 application with SSR, replacing an existing WordPress-based intranet.
 
 ## Commands
 
 ```bash
 # Development
-npm run dev              # Start dev server with HMR (http://localhost:5173)
+npm run dev              # Start development server with HMR
 
-# Linting & Formatting
-npm run lint             # Check for linting issues
-npm run lint:fix         # Fix linting issues
-npm run format           # Format code with Prettier
-npm run format:check     # Check formatting compliance
+# Build & Production
+npm run build            # Production build
+npm run start            # Start production server
 
-# Building & Production
-npm run build            # Create production build
-npm run typecheck        # Generate React Router types and check TypeScript
-npm run start            # Serve production build
+# Code Quality
+npm run typecheck        # Generate types & run TypeScript check
+npm run lint             # ESLint check on app/
+npm run lint:fix         # Auto-fix ESLint issues
+npm run format           # Format all TS/TSX/CSS with Prettier
+npm run format:check     # Check formatting without modifying
 
 # Docker
 docker build -t arl-intranet .
 docker run -p 3000:3000 arl-intranet
 ```
 
-**Note:** No test framework is currently configured.
+## Tech Stack
+
+- **Framework:** React Router v7.12 (full-stack with SSR)
+- **React:** v19.2
+- **UI:** HeroUI (formerly NextUI), Framer Motion, Lucide icons
+- **Styling:** TailwindCSS v4 with custom brand theme
+- **Build:** Vite v7
+- **Database:** MongoDB (planned, not yet implemented)
+- **Auth:** OTP + JWT for admin portal (planned)
 
 ## Architecture
 
-### Framework Stack
-- **React Router v7** - Full-stack framework with SSR enabled
-- **Vite 7** - Build tool with HMR
-- **TailwindCSS v4** - Styling with custom brand theme (Gold #D4AF37 / Navy #1B365D)
-- **HeroUI** - Component library with React Router integration
-- **TypeScript** - Strict mode enabled
-
-### Project Structure
 ```
 app/
-├── components/          # Reusable React components
-│   ├── dashboard/       # Dashboard-specific components
-│   ├── layout/          # Layout components (Header, Footer, MainLayout)
-│   └── ui/              # UI primitives (ErrorPage, LoadingSpinner)
-├── lib/                 # Utilities and constants
-│   ├── constants.ts     # Brand colors, navigation, departments
-│   └── utils.ts         # Helper utilities
-├── providers/           # Context providers
-│   └── HeroUIProvider.tsx
-├── routes/              # Route components
-├── root.tsx             # Root layout and error boundary
-└── routes.ts            # Route configuration
+├── components/
+│   ├── dashboard/       # Homepage dashboard components
+│   ├── layout/          # MainLayout, Header, Footer
+│   └── ui/              # Reusable UI (LoadingSpinner, ErrorPage)
+├── routes/              # React Router file-based routes
+│   ├── home.tsx         # Index route (/)
+│   └── routes.ts        # Route configuration
+├── lib/
+│   ├── constants.ts     # Brand colors, nav links, departments, API routes
+│   └── utils.ts         # Helper functions (formatDate, truncateText, debounce)
+├── providers/           # Context providers (HeroUIProvider)
+├── root.tsx             # Root layout & error boundary
+└── app.css              # Global styles & Tailwind theme
 ```
 
-### Key Patterns
-- **Path alias:** Use `~/` for absolute imports (maps to `./app/*`)
-- **Index exports:** Component directories use `index.ts` for cleaner imports
-- **Layout wrapper:** MainLayout wraps content with Header + Footer
-- **Provider integration:** HeroUIProvider wraps app with React Router navigation support
-- **Brand theming:** Colors defined in both `app.css` (CSS variables) and `lib/constants.ts` (TypeScript)
+## Key Patterns
 
-### Route Configuration
-Routes are defined in `app/routes.ts` using React Router v7's file-based routing. Types are auto-generated in `.react-router/` directory.
+**Imports:** Use path alias `~/` for app directory (e.g., `import { Header } from "~/components/layout"`)
 
-## Code Style
+**Component exports:** Named exports with index.ts barrel files
 
-- **Prettier:** Double quotes, semicolons, 2-space indentation, trailing commas (ES5)
-- **ESLint:** TypeScript-ESLint with React Hooks plugin
-- **Tailwind plugin:** prettier-plugin-tailwindcss auto-sorts utility classes
+**Task references:** Components reference WBS task IDs in comments (e.g., `Task: 1.1.1.3.1`)
 
-## Documentation Reference
+**Brand colors:** Primary gold (#D4AF37), secondary navy (#1B365D), safety colors defined in constants.ts and app.css
 
-- `docs/DEPARTMENTS.md` - Department codes and organizational hierarchy
-- `PROJECT_PLAN.md` - Four-phase development plan and feature roadmap
-- `WBS.md` - Work breakdown structure with task tracking
+## Project Documentation
+
+- `PROJECT_PLAN.md` - Detailed 4-phase project plan with all features
+- `WBS.md` - Work Breakdown Structure with task tracking and status
+- `docs/DEPARTMENTS.md` - Department structure and codes
+- `.env.example` - Environment variables template
+
+## Current Status
+
+Phase 1 (Foundation & Core Communication) is in progress. Base layout components are mostly complete. Database setup, admin portal, and content features are pending. See WBS.md for detailed task status.

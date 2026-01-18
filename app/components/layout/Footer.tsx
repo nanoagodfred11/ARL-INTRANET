@@ -1,46 +1,57 @@
-import { Link } from "react-router";
-import { COMPANY, NAV_LINKS } from "~/lib/constants";
+import { Link } from "@heroui/react";
+import { Phone, Mail, MapPin } from "lucide-react";
 
-/**
- * Footer Component
- * Task: 1.1.1.3.5
- */
+const quickLinks = [
+  { label: "Home", href: "/" },
+  { label: "News", href: "/news" },
+  { label: "Safety", href: "/safety" },
+  { label: "Directory", href: "/directory" },
+  { label: "Gallery", href: "/gallery" },
+  { label: "Apps", href: "/apps" },
+];
+
+const emergencyContacts = [
+  { label: "Emergency", value: "Call Control Room", icon: Phone },
+  { label: "HSE", value: "Safety Hotline", icon: Phone },
+  { label: "IT Support", value: "Help Desk", icon: Mail },
+];
+
 export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-navy-900 text-gray-300">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <footer className="bg-navy-900 text-white">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-          {/* Company Info */}
+          {/* Brand & Description */}
           <div>
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold-500 font-bold text-navy-900">
-                ARL
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-gold-400">
-                  {COMPANY.intranetName}
-                </h3>
-                <p className="text-sm text-gray-400">{COMPANY.name}</p>
+              <img
+                src="/images/logo-icon.png"
+                alt="ARL"
+                className="h-10 w-10 object-contain"
+              />
+              <div className="flex flex-col">
+                <span className="text-lg font-bold text-gold-400">ARL Connect</span>
+                <span className="text-xs text-gray-400">Adamus Resources Limited</span>
               </div>
             </div>
             <p className="mt-4 text-sm text-gray-400">
-              Your central hub for company news, safety information, and
-              resources. Connecting our team across the mine site.
+              Your central hub for company news, safety information, and resources.
+              Connecting our team across the mine site.
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gold-400">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-gold-400">
               Quick Links
-            </h4>
-            <ul className="space-y-2">
-              {NAV_LINKS.map((link) => (
+            </h3>
+            <ul className="mt-4 space-y-2">
+              {quickLinks.map((link) => (
                 <li key={link.href}>
                   <Link
-                    to={link.href}
+                    href={link.href}
                     className="text-sm text-gray-400 transition-colors hover:text-gold-400"
                   >
                     {link.label}
@@ -50,43 +61,40 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Contact & Emergency */}
+          {/* Emergency Contacts */}
           <div>
-            <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gold-400">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-gold-400">
               Emergency Contacts
-            </h4>
-            <ul className="space-y-2 text-sm text-gray-400">
-              <li>
-                <span className="font-medium text-red-400">Emergency:</span>{" "}
-                Call Control Room
-              </li>
-              <li>
-                <span className="font-medium text-gold-400">HSE:</span> Safety
-                Hotline
-              </li>
-              <li>
-                <span className="font-medium text-gold-400">IT Support:</span>{" "}
-                Help Desk
-              </li>
+            </h3>
+            <ul className="mt-4 space-y-3">
+              {emergencyContacts.map((contact) => (
+                <li key={contact.label} className="flex items-center gap-3">
+                  <contact.icon size={16} className="text-gold-500" />
+                  <div>
+                    <span className="text-sm font-medium text-gray-300">
+                      {contact.label}:
+                    </span>{" "}
+                    <span className="text-sm text-gray-400">{contact.value}</span>
+                  </div>
+                </li>
+              ))}
             </ul>
-            <div className="mt-4">
-              <Link
-                to="/directory"
-                className="text-sm text-gold-400 underline hover:text-gold-300"
-              >
-                View Full Directory →
-              </Link>
-            </div>
+            <Link
+              href="/directory"
+              className="mt-4 inline-block text-sm text-gold-400 hover:text-gold-300"
+            >
+              View Full Directory →
+            </Link>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="mt-8 border-t border-gray-700 pt-6">
-          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+        {/* Bottom bar */}
+        <div className="mt-8 border-t border-navy-700 pt-8">
+          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <p className="text-sm text-gray-500">
-              © {currentYear} {COMPANY.name}. All rights reserved.
+              © {currentYear} Adamus Resources Limited. All rights reserved.
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-xs text-gray-600">
               Internal Use Only - Accessible on Company Network
             </p>
           </div>
