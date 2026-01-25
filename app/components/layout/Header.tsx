@@ -8,9 +8,7 @@ import {
   NavbarMenuItem,
   Input,
   Avatar,
-  AvatarGroup,
   Button,
-  Link,
   Dropdown,
   DropdownTrigger,
   DropdownMenu,
@@ -18,7 +16,7 @@ import {
 } from "@heroui/react";
 import { Search, Bell, Settings, LogOut, User } from "lucide-react";
 import { useState } from "react";
-import { useLocation } from "react-router";
+import { Link, useLocation } from "react-router";
 
 const navItems = [
   { label: "Home", href: "/" },
@@ -27,13 +25,6 @@ const navItems = [
   { label: "Directory", href: "/directory" },
   { label: "Events", href: "/events" },
   { label: "Apps", href: "/apps" },
-];
-
-const onlineUsers = [
-  { name: "John K.", avatar: "JK" },
-  { name: "Mary A.", avatar: "MA" },
-  { name: "Peter O.", avatar: "PO" },
-  { name: "Sarah M.", avatar: "SM" },
 ];
 
 export function Header() {
@@ -50,7 +41,7 @@ export function Header() {
       isMenuOpen={isMenuOpen}
       onMenuOpenChange={setIsMenuOpen}
       classNames={{
-        base: "bg-[#1B365D] shadow-md",
+        base: "bg-[#1a1a1a] shadow-md",
         wrapper: "max-w-full px-4 sm:px-6",
       }}
       maxWidth="full"
@@ -67,11 +58,11 @@ export function Header() {
       {/* Brand */}
       <NavbarContent justify="start" className="gap-8">
         <NavbarBrand>
-          <Link href="/" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2">
             <img
               src="/images/logo.png"
               alt="Adamus Resources"
-              className="h-10 object-contain"
+              className="h-14 object-contain"
             />
           </Link>
         </NavbarBrand>
@@ -81,7 +72,7 @@ export function Header() {
           {navItems.map((item) => (
             <NavbarItem key={item.href}>
               <Link
-                href={item.href}
+                to={item.href}
                 className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                   isActive(item.href)
                     ? "bg-white/20 text-white"
@@ -110,29 +101,6 @@ export function Header() {
             startContent={<Search size={16} className="text-white/60" />}
             type="search"
           />
-        </NavbarItem>
-
-        {/* Online Users */}
-        <NavbarItem className="hidden lg:flex">
-          <AvatarGroup
-            isBordered
-            max={4}
-            size="sm"
-            classNames={{
-              base: "gap-0",
-            }}
-          >
-            {onlineUsers.map((user) => (
-              <Avatar
-                key={user.name}
-                name={user.avatar}
-                size="sm"
-                classNames={{
-                  base: "bg-white text-primary-600 text-xs font-semibold",
-                }}
-              />
-            ))}
-          </AvatarGroup>
         </NavbarItem>
 
         {/* Notifications */}
@@ -186,7 +154,7 @@ export function Header() {
       </NavbarContent>
 
       {/* Mobile menu */}
-      <NavbarMenu className="bg-[#1B365D] pt-6">
+      <NavbarMenu className="bg-[#1a1a1a] pt-6">
         {/* Mobile Search */}
         <div className="mb-4 px-2">
           <Input
@@ -203,13 +171,13 @@ export function Header() {
         {navItems.map((item) => (
           <NavbarMenuItem key={item.href}>
             <Link
-              href={item.href}
+              to={item.href}
               className={`block w-full rounded-lg px-3 py-2 text-lg ${
                 isActive(item.href)
                   ? "bg-white/20 font-semibold text-white"
                   : "text-white/80"
               }`}
-              onPress={() => setIsMenuOpen(false)}
+              onClick={() => setIsMenuOpen(false)}
             >
               {item.label}
             </Link>
@@ -217,9 +185,9 @@ export function Header() {
         ))}
         <NavbarMenuItem>
           <Link
-            href="/admin"
+            to="/admin"
             className="mt-4 block w-full rounded-lg px-3 py-2 text-lg text-white/60"
-            onPress={() => setIsMenuOpen(false)}
+            onClick={() => setIsMenuOpen(false)}
           >
             Admin Portal
           </Link>

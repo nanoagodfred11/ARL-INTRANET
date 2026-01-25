@@ -227,3 +227,130 @@ export function getMediaType(mimeType: string): "image" | "video" | "audio" | nu
   if (ALLOWED_AUDIO_TYPES.includes(mimeType)) return "audio";
   return null;
 }
+
+/**
+ * Generic file upload function that auto-detects file type
+ * Used by admin routes for uploading images and videos
+ * Throws an error if upload fails
+ */
+export async function uploadFile(
+  file: File,
+  subdir: string = "uploads"
+): Promise<{ url: string; type?: "image" | "video" | "audio" }> {
+  let result: MediaUploadResult;
+
+  // Determine upload type based on file MIME type
+  if (ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    result = await uploadImage(file, subdir);
+    if (result.success && result.url) {
+      return { url: result.url, type: "image" };
+    }
+  } else if (ALLOWED_VIDEO_TYPES.includes(file.type)) {
+    result = await uploadVideo(file, subdir);
+    if (result.success && result.url) {
+      return { url: result.url, type: "video" };
+    }
+  } else if (ALLOWED_AUDIO_TYPES.includes(file.type)) {
+    result = await uploadAudio(file, subdir);
+    if (result.success && result.url) {
+      return { url: result.url, type: "audio" };
+    }
+  } else {
+    throw new Error(`Unsupported file type: ${file.type}`);
+  }
+
+  // If we get here, upload failed
+  throw new Error(result?.error || "Upload failed");
+}
+
+// Allowed document types
+const ALLOWED_DOCUMENT_TYPES = ["application/pdf"];
+const MAX_DOCUMENT_SIZE = 50 * 1024 * 1024; // 50MB
+
+/**
+ * Upload a PDF document
+ * Used for safety documents and other PDF files
+ */
+export async function uploadDocument(
+  file: File,
+  subdir: string = "documents"
+): Promise<{ url: string }> {
+  // Validate file type
+  if (!ALLOWED_DOCUMENT_TYPES.includes(file.type)) {
+    throw new Error(`Invalid document type: ${file.type}. Only PDF files are allowed.`);
+  }
+
+  // Validate file size
+  if (file.size > MAX_DOCUMENT_SIZE) {
+    throw new Error(`File too large. Maximum size is ${MAX_DOCUMENT_SIZE / (1024 * 1024)}MB`);
+  }
+
+  try {
+    // Generate unique filename
+    const ext = ".pdf";
+    const uniqueName = `${crypto.randomBytes(16).toString("hex")}${ext}`;
+
+    // Ensure directory exists
+    const uploadDir = ensureUploadDir(subdir);
+
+    // Write file
+    const filePath = path.join(uploadDir, uniqueName);
+    const buffer = Buffer.from(await file.arrayBuffer());
+    fs.writeFileSync(filePath, buffer);
+
+    // Return public URL
+    const url = `/uploads/${subdir}/${uniqueName}`;
+    return { url };
+  } catch (error) {
+    console.error("Document upload error:", error);
+    throw new Error("Failed to upload document");
+  }
+}
+
+// Task: 1.2.1.2.4 - Upload thumbnail from base64 data URL
+export async function uploadThumbnailFromBase64(
+  dataUrl: string,
+  subdir: string = "thumbnails"
+): Promise<UploadResult> {
+  try {
+    // Parse the data URL
+    const matches = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+    if (!matches) {
+      return { success: false, error: "Invalid data URL format" };
+    }
+
+    const mimeType = matches[1];
+    const base64Data = matches[2];
+
+    // Validate mime type
+    if (!ALLOWED_IMAGE_TYPES.includes(mimeType)) {
+      return { success: false, error: "Invalid image type for thumbnail" };
+    }
+
+    const uploadDir = ensureUploadDir(subdir);
+
+    // Generate unique filename
+    const ext = mimeType === "image/png" ? ".png" : ".jpg";
+    const filename = `thumb_${crypto.randomBytes(12).toString("hex")}${ext}`;
+    const filepath = path.join(uploadDir, filename);
+
+    // Convert base64 to buffer and save
+    const buffer = Buffer.from(base64Data, "base64");
+
+    // Check file size (max 1MB for thumbnails)
+    if (buffer.length > 1024 * 1024) {
+      return { success: false, error: "Thumbnail too large (max 1MB)" };
+    }
+
+    fs.writeFileSync(filepath, buffer);
+
+    const url = `/uploads/${subdir}/${filename}`;
+    return { success: true, url };
+  } catch (error) {
+    console.error("Thumbnail upload error:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Thumbnail upload failed",
+    };
+  }
+}

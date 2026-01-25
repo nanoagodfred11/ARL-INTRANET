@@ -20,14 +20,7 @@ import {
 import { ArrowLeft, Save, Calendar, Trash2, Video, Volume2, Image as ImageIcon, Eye } from "lucide-react";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { useLoaderData, useActionData, useNavigation, useSearchParams, Form, Link, redirect } from "react-router";
-import { requireAuth } from "~/lib/services/session.server";
-import { connectDB } from "~/lib/db/connection.server";
-import {
-  getToolboxTalkById,
-  updateToolboxTalk,
-  deleteToolboxTalk,
-  serializeToolboxTalk,
-} from "~/lib/services/toolbox-talk.server";
+import { RichTextEditor } from "~/components/admin";
 
 interface EditLoaderData {
   talk: {
@@ -46,6 +39,10 @@ interface EditLoaderData {
 }
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
+  const { requireAuth } = await import("~/lib/services/session.server");
+  const { connectDB } = await import("~/lib/db/connection.server");
+  const { getToolboxTalkById, serializeToolboxTalk } = await import("~/lib/services/toolbox-talk.server");
+
   await requireAuth(request);
   await connectDB();
 
@@ -78,6 +75,10 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
+  const { requireAuth } = await import("~/lib/services/session.server");
+  const { connectDB } = await import("~/lib/db/connection.server");
+  const { updateToolboxTalk, deleteToolboxTalk } = await import("~/lib/services/toolbox-talk.server");
+
   await requireAuth(request);
   await connectDB();
 
@@ -264,15 +265,13 @@ export default function AdminToolboxTalkEditPage() {
                   classNames={{ inputWrapper: "bg-gray-50" }}
                 />
 
-                <Textarea
+                <RichTextEditor
                   name="content"
                   label="Content"
-                  placeholder="Write your toolbox talk content here... (HTML supported)"
-                  defaultValue={talk.content}
-                  minRows={10}
+                  placeholder="Write your toolbox talk content here..."
+                  initialContent={talk.content}
                   isRequired
-                  classNames={{ inputWrapper: "bg-gray-50" }}
-                  description="You can use HTML tags for formatting"
+                  minHeight="250px"
                 />
               </CardBody>
             </Card>

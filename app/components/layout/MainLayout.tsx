@@ -1,23 +1,28 @@
 import { Header } from "./Header";
 import { Footer } from "./Footer";
-import { LeftSidebar } from "./LeftSidebar";
 import { RightSidebar } from "./RightSidebar";
+import { ChatWidget } from "../chat/ChatWidget";
 
 interface MainLayoutProps {
   children: React.ReactNode;
-  showSidebars?: boolean;
+  showRightSidebar?: boolean;
+  showChatWidget?: boolean;
 }
 
-export function MainLayout({ children, showSidebars = true }: MainLayoutProps) {
+export function MainLayout({
+  children,
+  showRightSidebar = false,
+  showChatWidget = true,
+}: MainLayoutProps) {
   return (
     <div className="flex min-h-screen flex-col bg-gray-100">
       <Header />
-      <div className="mx-auto flex w-full max-w-[1600px] flex-1 gap-6 px-4 py-6">
-        {showSidebars && <LeftSidebar />}
+      <div className="mx-auto flex w-full max-w-[1600px] flex-1 items-start gap-6 px-4 py-6 pb-24 lg:pb-6">
         <main className="min-w-0 flex-1">{children}</main>
-        {showSidebars && <RightSidebar />}
+        {showRightSidebar && <RightSidebar />}
       </div>
       <Footer />
+      {showChatWidget && <ChatWidget />}
     </div>
   );
 }

@@ -3,7 +3,7 @@
  * Task: 1.1.5.3.2
  */
 
-import { useState } from "react";
+import React, { useState } from "react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { useLoaderData, Form, useNavigation, useActionData, Link } from "react-router";
 import {
@@ -28,7 +28,21 @@ import {
   Textarea,
   Switch,
 } from "@heroui/react";
-import { Plus, Edit, Trash2, Folder, AppWindow, ArrowLeft } from "lucide-react";
+import {
+  Plus, Edit, Trash2, Folder, AppWindow, ArrowLeft,
+  LayoutGrid, FileText, Mail, Calendar, Database, Users, Settings,
+  Shield, BarChart, Truck, Wrench, Globe, Briefcase, Building, Building2,
+  Calculator, CreditCard, DollarSign, Heart, HeartPulse, Activity,
+  Stethoscope, AlertTriangle, ShieldCheck, Flame, HardHat, Factory,
+} from "lucide-react";
+
+// Icon mapping for rendering
+const iconMap: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+  Folder, AppWindow, LayoutGrid, FileText, Mail, Calendar, Database, Users,
+  Settings, Shield, BarChart, Truck, Wrench, Globe, Briefcase, Building,
+  Building2, Calculator, CreditCard, DollarSign, Heart, HeartPulse, Activity,
+  Stethoscope, AlertTriangle, ShieldCheck, Flame, HardHat, Factory,
+};
 import { connectDB } from "~/lib/db/connection.server";
 import { requireAuth, getSessionData } from "~/lib/services/session.server";
 import { logActivity } from "~/lib/services/activity-log.server";
@@ -46,6 +60,9 @@ import type { IAppLinkCategory } from "~/lib/db/models/app-link.server";
 const availableIcons = [
   "Folder", "AppWindow", "LayoutGrid", "FileText", "Mail", "Calendar",
   "Database", "Users", "Settings", "Shield", "BarChart", "Truck", "Wrench", "Globe",
+  "Briefcase", "Building", "Building2", "Calculator", "CreditCard", "DollarSign",
+  "Heart", "HeartPulse", "Activity", "Stethoscope", "AlertTriangle", "ShieldCheck",
+  "Flame", "HardHat", "Factory",
 ];
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -391,11 +408,17 @@ export default function AdminAppsCategories() {
                   label="Icon"
                   placeholder="Select icon"
                 >
-                  {availableIcons.map((icon) => (
-                    <SelectItem key={icon} textValue={icon}>
-                      {icon}
-                    </SelectItem>
-                  ))}
+                  {availableIcons.map((iconName) => {
+                    const IconComp = iconMap[iconName] || Folder;
+                    return (
+                      <SelectItem key={iconName} textValue={iconName}>
+                        <div className="flex items-center gap-2">
+                          <IconComp size={18} />
+                          <span>{iconName}</span>
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
                 </Select>
                 <Input
                   name="order"
@@ -451,11 +474,17 @@ export default function AdminAppsCategories() {
                     label="Icon"
                     defaultSelectedKeys={editCat.icon ? [editCat.icon] : []}
                   >
-                    {availableIcons.map((icon) => (
-                      <SelectItem key={icon} textValue={icon}>
-                        {icon}
-                      </SelectItem>
-                    ))}
+                    {availableIcons.map((iconName) => {
+                      const IconComp = iconMap[iconName] || Folder;
+                      return (
+                        <SelectItem key={iconName} textValue={iconName}>
+                          <div className="flex items-center gap-2">
+                            <IconComp size={18} />
+                            <span>{iconName}</span>
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
                   </Select>
                   <Input
                     name="order"

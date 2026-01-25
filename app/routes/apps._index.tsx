@@ -3,6 +3,7 @@
  * Task: 1.1.5.2.1
  */
 
+import React from "react";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { useLoaderData, useFetcher } from "react-router";
 import {
@@ -29,6 +30,73 @@ import {
   Truck,
   Wrench,
   Globe,
+  // Additional common business icons
+  Briefcase,
+  Building,
+  Building2,
+  Calculator,
+  Clock,
+  CreditCard,
+  DollarSign,
+  FileSpreadsheet,
+  HardDrive,
+  Headphones,
+  Heart,
+  Home,
+  Landmark,
+  Laptop,
+  LineChart,
+  MapPin,
+  MessageSquare,
+  Monitor,
+  Package,
+  Phone,
+  Printer,
+  Server,
+  ShoppingCart,
+  Smartphone,
+  Target,
+  Video,
+  Wallet,
+  Wifi,
+  Zap,
+  ClipboardList,
+  Factory,
+  Fuel,
+  HardHat,
+  Pickaxe,
+  Receipt,
+  Scale,
+  Warehouse,
+  // Health & Medical (for Med Treatment app)
+  HeartPulse,
+  Activity,
+  Stethoscope,
+  Pill,
+  Syringe,
+  Cross,
+  CirclePlus,
+  Ambulance,
+  // Safety & HSE (for HSE Suite)
+  AlertTriangle,
+  AlertCircle,
+  ShieldCheck,
+  ShieldAlert,
+  Flame,
+  Siren,
+  BadgeCheck,
+  ClipboardCheck,
+  FileCheck,
+  FileWarning,
+  // Additional utility
+  Eye,
+  Megaphone,
+  Bell,
+  BookOpen,
+  GraduationCap,
+  Layers,
+  PieChart,
+  TrendingUp,
 } from "lucide-react";
 import { useState } from "react";
 import { MainLayout } from "~/components/layout";
@@ -43,6 +111,7 @@ import type { IAppLink, IAppLinkCategory } from "~/lib/db/models/app-link.server
 
 // Icon mapping for lucide icons
 const iconMap: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+  // Original icons
   AppWindow,
   Folder,
   LayoutGrid,
@@ -59,6 +128,79 @@ const iconMap: Record<string, React.ComponentType<{ size?: number; className?: s
   Globe,
   ExternalLink,
   Lock,
+  // Business & Finance
+  Briefcase,
+  Building,
+  Building2,
+  Calculator,
+  CreditCard,
+  DollarSign,
+  Landmark,
+  Receipt,
+  Scale,
+  Wallet,
+  // Time & Productivity
+  Clock,
+  ClipboardList,
+  Target,
+  // Technology & IT
+  HardDrive,
+  Laptop,
+  Monitor,
+  Server,
+  Smartphone,
+  Wifi,
+  Zap,
+  // Communication
+  Headphones,
+  MessageSquare,
+  Phone,
+  Video,
+  // Charts & Data
+  FileSpreadsheet,
+  LineChart,
+  // Logistics & Operations
+  Factory,
+  Home,
+  MapPin,
+  Package,
+  Printer,
+  ShoppingCart,
+  Warehouse,
+  // Mining & Industry specific
+  Fuel,
+  HardHat,
+  Pickaxe,
+  // Health & Medical (Med Treatment)
+  Heart,
+  HeartPulse,
+  Activity,
+  Stethoscope,
+  Pill,
+  Syringe,
+  Cross,
+  CirclePlus,
+  Ambulance,
+  // Safety & HSE (HSE Suite)
+  AlertTriangle,
+  AlertCircle,
+  ShieldCheck,
+  ShieldAlert,
+  Flame,
+  Siren,
+  BadgeCheck,
+  ClipboardCheck,
+  FileCheck,
+  FileWarning,
+  // Additional utility
+  Eye,
+  Megaphone,
+  Bell,
+  BookOpen,
+  GraduationCap,
+  Layers,
+  PieChart,
+  TrendingUp,
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {

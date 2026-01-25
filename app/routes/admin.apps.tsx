@@ -3,7 +3,7 @@
  * Task: 1.1.5.3.1, 1.1.5.3.4 (drag-and-drop reordering)
  */
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { useLoaderData, useSearchParams, Form, useNavigation, useActionData, Link, useFetcher } from "react-router";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
@@ -14,12 +14,6 @@ import {
   Select,
   SelectItem,
   Button,
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
   Chip,
   Pagination,
   Modal,
@@ -42,7 +36,102 @@ import {
   BarChart,
   MousePointerClick,
   GripVertical,
+  // Additional icons for display
+  LayoutGrid,
+  FileText,
+  Mail,
+  Calendar,
+  Database,
+  Users,
+  Settings,
+  Shield,
+  Truck,
+  Wrench,
+  Globe,
+  Briefcase,
+  Building,
+  Building2,
+  Calculator,
+  CreditCard,
+  DollarSign,
+  Landmark,
+  Receipt,
+  Scale,
+  Wallet,
+  Clock,
+  ClipboardList,
+  Target,
+  HardDrive,
+  Laptop,
+  Monitor,
+  Server,
+  Smartphone,
+  Wifi,
+  Zap,
+  Headphones,
+  MessageSquare,
+  Phone,
+  Video,
+  FileSpreadsheet,
+  LineChart,
+  Factory,
+  Home,
+  MapPin,
+  Package,
+  Printer,
+  ShoppingCart,
+  Warehouse,
+  Fuel,
+  HardHat,
+  Pickaxe,
+  Heart,
+  // Health & Medical (Med Treatment)
+  HeartPulse,
+  Activity,
+  Stethoscope,
+  Pill,
+  Syringe,
+  Cross,
+  CirclePlus,
+  Ambulance,
+  // Safety & HSE (HSE Suite)
+  AlertTriangle,
+  AlertCircle,
+  ShieldCheck,
+  ShieldAlert,
+  Flame,
+  Siren,
+  BadgeCheck,
+  ClipboardCheck,
+  FileCheck,
+  FileWarning,
+  // Additional utility
+  Eye,
+  Megaphone,
+  Bell,
+  BookOpen,
+  GraduationCap,
+  Layers,
+  PieChart,
+  TrendingUp,
 } from "lucide-react";
+
+// Icon mapping for lucide icons
+const iconMap: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+  AppWindow, Folder, LayoutGrid, FileText, Mail, Calendar, Database, Users, Settings,
+  Shield, BarChart, Truck, Wrench, Globe, Briefcase, Building, Building2, Calculator,
+  CreditCard, DollarSign, Landmark, Receipt, Scale, Wallet, Clock, ClipboardList, Target,
+  HardDrive, Laptop, Monitor, Server, Smartphone, Wifi, Zap, Headphones, MessageSquare,
+  Phone, Video, FileSpreadsheet, LineChart, Factory, Home, MapPin, Package, Printer,
+  ShoppingCart, Warehouse, Fuel, HardHat, Pickaxe, Heart,
+  // Health & Medical
+  HeartPulse, Activity, Stethoscope, Pill, Syringe, Cross, CirclePlus, Ambulance,
+  // Safety & HSE
+  AlertTriangle, AlertCircle, ShieldCheck, ShieldAlert, Flame, Siren, BadgeCheck,
+  ClipboardCheck, FileCheck, FileWarning,
+  // Additional
+  Eye, Megaphone, Bell, BookOpen, GraduationCap, Layers, PieChart, TrendingUp,
+};
 import { connectDB } from "~/lib/db/connection.server";
 import { requireAuth, getSessionData } from "~/lib/services/session.server";
 import { logActivity } from "~/lib/services/activity-log.server";
@@ -57,10 +146,33 @@ import {
 } from "~/lib/services/app-link.server";
 import type { IAppLink, IAppLinkCategory } from "~/lib/db/models/app-link.server";
 
-// Available lucide icons for selection
+// Available lucide icons for selection - grouped by category
 const availableIcons = [
+  // General
   "AppWindow", "Folder", "LayoutGrid", "FileText", "Mail", "Calendar",
   "Database", "Users", "Settings", "Shield", "BarChart", "Truck", "Wrench", "Globe",
+  // Business & Finance
+  "Briefcase", "Building", "Building2", "Calculator", "CreditCard", "DollarSign",
+  "Landmark", "Receipt", "Scale", "Wallet",
+  // Time & Productivity
+  "Clock", "ClipboardList", "Target",
+  // Technology & IT
+  "HardDrive", "Laptop", "Monitor", "Server", "Smartphone", "Wifi", "Zap",
+  // Communication
+  "Headphones", "MessageSquare", "Phone", "Video",
+  // Charts & Data
+  "FileSpreadsheet", "LineChart",
+  // Logistics & Operations
+  "Factory", "Home", "MapPin", "Package", "Printer", "ShoppingCart", "Warehouse",
+  // Mining & Industry specific
+  "Fuel", "HardHat", "Pickaxe",
+  // Health & Medical (Med Treatment app)
+  "Heart", "HeartPulse", "Activity", "Stethoscope", "Pill", "Syringe", "Cross", "CirclePlus", "Ambulance",
+  // Safety & HSE (HSE Suite app)
+  "AlertTriangle", "AlertCircle", "ShieldCheck", "ShieldAlert", "Flame", "Siren", "BadgeCheck",
+  "ClipboardCheck", "FileCheck", "FileWarning",
+  // Additional utility
+  "Eye", "Megaphone", "Bell", "BookOpen", "GraduationCap", "Layers", "PieChart", "TrendingUp",
 ];
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -203,6 +315,25 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   return Response.json({ error: "Invalid action" });
+}
+
+// Helper component to render app icons
+function AppIcon({ icon, iconType, className }: { icon?: string; iconType: string; className?: string }) {
+  if (!icon) {
+    return <AppWindow size={20} className={className} />;
+  }
+
+  if (iconType === "emoji") {
+    return <span className="text-xl">{icon}</span>;
+  }
+
+  if (iconType === "url") {
+    return <img src={icon} alt="" className="h-5 w-5 object-contain" />;
+  }
+
+  // lucide icon
+  const IconComponent = iconMap[icon] || AppWindow;
+  return <IconComponent size={20} className={className} />;
 }
 
 export default function AdminApps() {
@@ -396,130 +527,144 @@ export default function AdminApps() {
 
       {/* App Links Table */}
       <Card>
-        <CardBody className="p-0">
+        <CardBody className="p-0 overflow-x-auto">
           <DragDropContext onDragEnd={handleDragEnd}>
-            <Table aria-label="App links table" removeWrapper>
-              <TableHeader>
-                {canReorder ? <TableColumn width={40}></TableColumn> : null}
-                <TableColumn>NAME</TableColumn>
-                <TableColumn>CATEGORY</TableColumn>
-                <TableColumn>URL</TableColumn>
-                <TableColumn>CLICKS</TableColumn>
-                <TableColumn>STATUS</TableColumn>
-                <TableColumn align="end">ACTIONS</TableColumn>
-              </TableHeader>
+            <table className="w-full min-w-[800px]">
+              <thead className="bg-gray-50 border-b">
+                <tr>
+                  {canReorder && <th className="w-10 px-3 py-3"></th>}
+                  <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Name</th>
+                  <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Category</th>
+                  <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">URL</th>
+                  <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Clicks</th>
+                  <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
+                  <th className="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Actions</th>
+                </tr>
+              </thead>
               <Droppable droppableId="appLinks" isDropDisabled={!canReorder}>
                 {(provided) => (
-                  <TableBody
-                    emptyContent="No app links found"
+                  <tbody
                     {...provided.droppableProps}
-                    ref={provided.innerRef as React.Ref<HTMLTableSectionElement>}
+                    ref={provided.innerRef}
+                    className="divide-y divide-gray-100"
                   >
-                    {appLinks.map((appLink: IAppLink, index: number) => (
-                      <Draggable
-                        key={appLink._id.toString()}
-                        draggableId={appLink._id.toString()}
-                        index={index}
-                        isDragDisabled={!canReorder}
-                      >
-                        {(provided, snapshot) => (
-                          <TableRow
-                            ref={provided.innerRef as React.Ref<HTMLTableRowElement>}
-                            {...provided.draggableProps}
-                            className={snapshot.isDragging ? "bg-primary-50" : ""}
-                          >
-                            {canReorder ? (
-                              <TableCell>
-                                <div
-                                  {...provided.dragHandleProps}
-                                  className="cursor-grab p-1 text-gray-400 hover:text-gray-600"
-                                >
-                                  <GripVertical size={16} />
-                                </div>
-                              </TableCell>
-                            ) : null}
-                            <TableCell>
-                              <div className="flex items-center gap-3">
-                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-50">
-                                  <AppWindow size={20} className="text-primary-600" />
-                                </div>
-                                <div>
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-medium">{appLink.name}</span>
-                                    {appLink.isInternal ? (
-                                      <Lock size={12} className="text-gray-400" />
-                                    ) : (
-                                      <ExternalLink size={12} className="text-gray-400" />
+                    {appLinks.length === 0 ? (
+                      <tr>
+                        <td colSpan={canReorder ? 7 : 6} className="px-3 py-8 text-center text-gray-500">
+                          No app links found
+                        </td>
+                      </tr>
+                    ) : (
+                      appLinks.map((appLink: IAppLink, index: number) => (
+                        <Draggable
+                          key={appLink._id.toString()}
+                          draggableId={appLink._id.toString()}
+                          index={index}
+                          isDragDisabled={!canReorder}
+                        >
+                          {(provided, snapshot) => (
+                            <tr
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              className={`${snapshot.isDragging ? "bg-primary-50" : "hover:bg-gray-50"}`}
+                            >
+                              {canReorder && (
+                                <td className="px-3 py-3">
+                                  <div
+                                    {...provided.dragHandleProps}
+                                    className="cursor-grab p-1 text-gray-400 hover:text-gray-600"
+                                  >
+                                    <GripVertical size={16} />
+                                  </div>
+                                </td>
+                              )}
+                              <td className="px-3 py-3">
+                                <div className="flex items-center gap-3">
+                                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-50">
+                                    <AppIcon
+                                      icon={appLink.icon}
+                                      iconType={appLink.iconType}
+                                      className="text-primary-600"
+                                    />
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-medium">{appLink.name}</span>
+                                      {appLink.isInternal ? (
+                                        <Lock size={12} className="text-gray-400" />
+                                      ) : (
+                                        <ExternalLink size={12} className="text-gray-400" />
+                                      )}
+                                    </div>
+                                    {appLink.description && (
+                                      <span className="text-xs text-gray-500 line-clamp-1">
+                                        {appLink.description}
+                                      </span>
                                     )}
                                   </div>
-                                  {appLink.description && (
-                                    <span className="text-xs text-gray-500 line-clamp-1">
-                                      {appLink.description}
-                                    </span>
-                                  )}
                                 </div>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Chip size="sm" variant="flat">
-                                {(appLink.category as IAppLinkCategory)?.name || "-"}
-                              </Chip>
-                            </TableCell>
-                            <TableCell>
-                              <a
-                                href={appLink.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-sm text-primary-600 hover:underline max-w-[200px] truncate block"
-                              >
-                                {appLink.url}
-                              </a>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-1 text-sm">
-                                <BarChart size={14} className="text-gray-400" />
-                                {appLink.clicks}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Chip
-                                size="sm"
-                                color={appLink.isActive ? "success" : "default"}
-                                variant="flat"
-                              >
-                                {appLink.isActive ? "Active" : "Inactive"}
-                              </Chip>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex justify-end gap-1">
-                                <Button
-                                  isIconOnly
-                                  size="sm"
-                                  variant="light"
-                                  onPress={() => setEditAppLink(appLink)}
+                              </td>
+                              <td className="px-3 py-3">
+                                <Chip size="sm" variant="flat">
+                                  {(appLink.category as IAppLinkCategory)?.name || "-"}
+                                </Chip>
+                              </td>
+                              <td className="px-3 py-3">
+                                <a
+                                  href={appLink.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-sm text-primary-600 hover:underline max-w-[200px] truncate block"
                                 >
-                                  <Edit size={16} />
-                                </Button>
-                                <Button
-                                  isIconOnly
+                                  {appLink.url}
+                                </a>
+                              </td>
+                              <td className="px-3 py-3">
+                                <div className="flex items-center gap-1 text-sm">
+                                  <BarChart size={14} className="text-gray-400" />
+                                  {appLink.clicks}
+                                </div>
+                              </td>
+                              <td className="px-3 py-3">
+                                <Chip
                                   size="sm"
-                                  variant="light"
-                                  color="danger"
-                                  onPress={() => setDeleteConfirm(appLink)}
+                                  color={appLink.isActive ? "success" : "default"}
+                                  variant="flat"
                                 >
-                                  <Trash2 size={16} />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        )}
-                      </Draggable>
-                    ))}
+                                  {appLink.isActive ? "Active" : "Inactive"}
+                                </Chip>
+                              </td>
+                              <td className="px-3 py-3">
+                                <div className="flex justify-end gap-1">
+                                  <Button
+                                    isIconOnly
+                                    size="sm"
+                                    variant="light"
+                                    onPress={() => setEditAppLink(appLink)}
+                                  >
+                                    <Edit size={16} />
+                                  </Button>
+                                  <Button
+                                    isIconOnly
+                                    size="sm"
+                                    variant="light"
+                                    color="danger"
+                                    onPress={() => setDeleteConfirm(appLink)}
+                                  >
+                                    <Trash2 size={16} />
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </Draggable>
+                      ))
+                    )}
                     {provided.placeholder}
-                  </TableBody>
+                  </tbody>
                 )}
               </Droppable>
-            </Table>
+            </table>
           </DragDropContext>
         </CardBody>
 
@@ -593,11 +738,17 @@ export default function AdminApps() {
                   label="Icon"
                   placeholder="Select icon"
                 >
-                  {availableIcons.map((icon) => (
-                    <SelectItem key={icon} textValue={icon}>
-                      {icon}
-                    </SelectItem>
-                  ))}
+                  {availableIcons.map((iconName) => {
+                    const IconComp = iconMap[iconName] || AppWindow;
+                    return (
+                      <SelectItem key={iconName} textValue={iconName}>
+                        <div className="flex items-center gap-2">
+                          <IconComp size={18} />
+                          <span>{iconName}</span>
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
                 </Select>
                 <Input
                   name="order"
@@ -683,11 +834,17 @@ export default function AdminApps() {
                     label="Icon"
                     defaultSelectedKeys={editAppLink.icon ? [editAppLink.icon] : []}
                   >
-                    {availableIcons.map((icon) => (
-                      <SelectItem key={icon} textValue={icon}>
-                        {icon}
-                      </SelectItem>
-                    ))}
+                    {availableIcons.map((iconName) => {
+                      const IconComp = iconMap[iconName] || AppWindow;
+                      return (
+                        <SelectItem key={iconName} textValue={iconName}>
+                          <div className="flex items-center gap-2">
+                            <IconComp size={18} />
+                            <span>{iconName}</span>
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
                   </Select>
                   <Input
                     name="order"

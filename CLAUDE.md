@@ -23,6 +23,14 @@ npm run lint:fix         # Auto-fix ESLint issues
 npm run format           # Format all TS/TSX/CSS with Prettier
 npm run format:check     # Check formatting without modifying
 
+# Database
+npm run db:seed          # Seed the database with initial data
+
+# E2E Testing (Playwright)
+npx playwright test                              # Run all E2E tests
+npx playwright test --ui                         # Run tests in UI mode
+npx playwright test tests/admin-login.spec.ts   # Run single test file
+
 # Docker
 docker build -t arl-intranet .
 docker run -p 3000:3000 arl-intranet
@@ -35,23 +43,28 @@ docker run -p 3000:3000 arl-intranet
 - **UI:** HeroUI (formerly NextUI), Framer Motion, Lucide icons
 - **Styling:** TailwindCSS v4 with custom brand theme
 - **Build:** Vite v7
-- **Database:** MongoDB (planned, not yet implemented)
-- **Auth:** OTP + JWT for admin portal (planned)
+- **Database:** MongoDB with Mongoose v9
+- **Auth:** OTP-based authentication with cookie sessions
 
 ## Architecture
 
 ```
 app/
 ├── components/
-│   ├── dashboard/       # Homepage dashboard components
-│   ├── layout/          # MainLayout, Header, Footer
+│   ├── admin/           # Admin-specific components
+│   ├── alerts/          # Alert banner and popup components
+│   ├── dashboard/       # Homepage dashboard widgets
+│   ├── layout/          # MainLayout, Header, Footer, Sidebars
 │   └── ui/              # Reusable UI (LoadingSpinner, ErrorPage)
-├── routes/              # React Router file-based routes
-│   ├── home.tsx         # Index route (/)
-│   └── routes.ts        # Route configuration
+├── routes/              # Route components (configured in routes.ts)
+├── routes.ts            # Central route configuration (not file-based)
 ├── lib/
-│   ├── constants.ts     # Brand colors, nav links, departments, API routes
-│   └── utils.ts         # Helper functions (formatDate, truncateText, debounce)
+│   ├── db/
+│   │   ├── connection.server.ts  # MongoDB connection singleton
+│   │   ├── models/               # Mongoose models (*.server.ts)
+│   │   └── seeds/                # Database seeders
+│   ├── services/                 # Business logic layer (*.server.ts)
+│   └── utils/                    # Helper functions
 ├── providers/           # Context providers (HeroUIProvider)
 ├── root.tsx             # Root layout & error boundary
 └── app.css              # Global styles & Tailwind theme
@@ -63,17 +76,32 @@ app/
 
 **Component exports:** Named exports with index.ts barrel files
 
-**Task references:** Components reference WBS task IDs in comments (e.g., `Task: 1.1.1.3.1`)
+**Server-only files:** Files ending in `.server.ts` are server-only and not bundled to the client. All database models and services use this convention.
 
-**Brand colors:** Primary gold (#D4AF37), secondary navy (#1B365D), safety colors defined in constants.ts and app.css
+**Database access:** Services must call `connectDB()` before any database operations:
+```typescript
+import { connectDB } from "~/lib/db/connection.server";
+await connectDB();
+```
+
+**Route protection:** Use session helpers in loaders/actions:
+- `requireAuth(request)` - Redirects to login if not authenticated
+- `requireSuperAdmin(request)` - Requires superadmin role
+- `getUser(request)` - Returns user or null (no redirect)
+
+**Route configuration:** Routes are defined centrally in `app/routes.ts` using React Router's route config API, not file-based routing.
+
+**Brand colors:** Primary gold (#d2ab67 / #c7a262), secondary dark (#1a1a1a), safety colors defined in app.css. Based on Nguvu Mining brand guidelines.
+
+## Environment Variables
+
+Copy `.env.example` to `.env`. Key variables:
+- `MONGODB_URI` - MongoDB connection string
+- `SESSION_SECRET` - Secret for cookie sessions
+- `SMS_API_KEY`, `SMS_USERNAME` - For OTP SMS delivery
 
 ## Project Documentation
 
 - `PROJECT_PLAN.md` - Detailed 4-phase project plan with all features
 - `WBS.md` - Work Breakdown Structure with task tracking and status
 - `docs/DEPARTMENTS.md` - Department structure and codes
-- `.env.example` - Environment variables template
-
-## Current Status
-
-Phase 1 (Foundation & Core Communication) is in progress. Base layout components are mostly complete. Database setup, admin portal, and content features are pending. See WBS.md for detailed task status.

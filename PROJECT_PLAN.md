@@ -14,7 +14,7 @@ Development of a modern, responsive intranet portal to replace the existing Word
 | Role | Resource |
 |------|----------|
 | Developer | 1 Full-stack Developer |
-| AI Assistant | Claude (Development Support) |
+| AI Assistant |, and i remmenber telling u to remove the  Claude (Development Support) |
 
 ---
 

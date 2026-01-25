@@ -3,7 +3,7 @@
  * Task: 1.1.3.4.2
  */
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Card,
   CardBody,
@@ -15,13 +15,12 @@ import {
   SelectItem,
   Switch,
   Divider,
+  Image,
 } from "@heroui/react";
-import { ArrowLeft, Save, Eye, ImagePlus } from "lucide-react";
+import { ArrowLeft, Save, Eye, ImagePlus, Upload, X, Video } from "lucide-react";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { useLoaderData, useActionData, useNavigation, Form, Link, redirect } from "react-router";
-import { requireAuth, getSessionData } from "~/lib/services/session.server";
-import { connectDB } from "~/lib/db/connection.server";
-import { News, NewsCategory } from "~/lib/db/models/news.server";
+import { RichTextEditor } from "~/components/admin";
 
 function generateSlug(title: string): string {
   return title
@@ -31,6 +30,10 @@ function generateSlug(title: string): string {
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
+  const { requireAuth } = await import("~/lib/services/session.server");
+  const { connectDB } = await import("~/lib/db/connection.server");
+  const { NewsCategory } = await import("~/lib/db/models/news.server");
+
   await requireAuth(request);
   await connectDB();
 
@@ -47,6 +50,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
+  const { requireAuth, getSessionData } = await import("~/lib/services/session.server");
+  const { connectDB } = await import("~/lib/db/connection.server");
+  const { News } = await import("~/lib/db/models/news.server");
+  const { uploadImage, uploadVideo } = await import("~/lib/services/upload.server");
+
   const user = await requireAuth(request);
   const sessionData = await getSessionData(request);
   await connectDB();
@@ -57,10 +65,42 @@ export async function action({ request }: ActionFunctionArgs) {
   const content = formData.get("content") as string;
   const excerpt = formData.get("excerpt") as string;
   const categoryId = formData.get("category") as string;
-  const featuredImage = formData.get("featuredImage") as string;
   const status = formData.get("status") as "draft" | "published";
   const isFeatured = formData.get("isFeatured") === "true";
   const isPinned = formData.get("isPinned") === "true";
+
+  // Handle file uploads
+  let featuredImage: string | null = null;
+  let featuredVideo: string | null = null;
+
+  const imageFile = formData.get("imageFile") as File | null;
+  const videoFile = formData.get("videoFile") as File | null;
+
+  // Upload image if provided
+  if (imageFile && imageFile.size > 0) {
+    const imageResult = await uploadImage(imageFile, "news");
+    if (imageResult.success && imageResult.url) {
+      featuredImage = imageResult.url;
+    } else {
+      return Response.json(
+        { error: imageResult.error || "Failed to upload image" },
+        { status: 400 }
+      );
+    }
+  }
+
+  // Upload video if provided
+  if (videoFile && videoFile.size > 0) {
+    const videoResult = await uploadVideo(videoFile, "news");
+    if (videoResult.success && videoResult.url) {
+      featuredVideo = videoResult.url;
+    } else {
+      return Response.json(
+        { error: videoResult.error || "Failed to upload video" },
+        { status: 400 }
+      );
+    }
+  }
 
   // Validation
   if (!title || !content || !categoryId) {
@@ -85,7 +125,8 @@ export async function action({ request }: ActionFunctionArgs) {
     excerpt: excerpt || content.substring(0, 200),
     category: categoryId,
     author: sessionData?.userId,
-    featuredImage: featuredImage || null,
+    featuredImage,
+    featuredVideo,
     status,
     isFeatured,
     isPinned,
@@ -103,6 +144,28 @@ export default function AdminNewsNewPage() {
 
   const [isFeatured, setIsFeatured] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setImagePreview(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setVideoPreview(URL.createObjectURL(file));
+    }
+  };
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -126,7 +189,7 @@ export default function AdminNewsNewPage() {
         </div>
       )}
 
-      <Form method="post">
+      <Form method="post" encType="multipart/form-data">
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Main Content */}
           <div className="space-y-6 lg:col-span-2">
@@ -151,30 +214,118 @@ export default function AdminNewsNewPage() {
                   classNames={{ inputWrapper: "bg-gray-50" }}
                 />
 
-                <Textarea
+                <RichTextEditor
                   name="content"
                   label="Content"
-                  placeholder="Write your article content here... (HTML supported)"
-                  minRows={10}
+                  placeholder="Write your article content here..."
                   isRequired
-                  classNames={{ inputWrapper: "bg-gray-50" }}
-                  description="You can use HTML tags for formatting"
+                  minHeight="300px"
                 />
               </CardBody>
             </Card>
 
             <Card className="shadow-sm">
               <CardHeader>
-                <h2 className="font-semibold">Featured Image</h2>
+                <h2 className="font-semibold">Featured Media</h2>
               </CardHeader>
-              <CardBody>
-                <Input
-                  name="featuredImage"
-                  label="Image URL"
-                  placeholder="https://example.com/image.jpg"
-                  description="Enter the URL of the featured image"
-                  classNames={{ inputWrapper: "bg-gray-50" }}
-                />
+              <CardBody className="space-y-4">
+                {/* Image Upload */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Featured Image
+                  </label>
+                  {imagePreview ? (
+                    <div className="relative">
+                      <Image
+                        src={imagePreview}
+                        alt="Preview"
+                        className="w-full h-48 object-cover rounded-lg"
+                      />
+                      <Button
+                        isIconOnly
+                        size="sm"
+                        color="danger"
+                        className="absolute top-2 right-2"
+                        onPress={() => {
+                          setImagePreview(null);
+                          if (imageInputRef.current) imageInputRef.current.value = "";
+                        }}
+                      >
+                        <X size={16} />
+                      </Button>
+                    </div>
+                  ) : (
+                    <label
+                      htmlFor="imageFile"
+                      className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary-500 hover:bg-primary-50 transition-colors"
+                    >
+                      <div className="flex flex-col items-center justify-center py-6">
+                        <ImagePlus size={40} className="text-gray-400 mb-2" />
+                        <p className="text-sm text-gray-500">Click to upload image</p>
+                        <p className="text-xs text-gray-400 mt-1">PNG, JPG, GIF up to 5MB</p>
+                      </div>
+                    </label>
+                  )}
+                  {/* File input always rendered so form submission includes the file */}
+                  <input
+                    ref={imageInputRef}
+                    id="imageFile"
+                    type="file"
+                    name="imageFile"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageChange}
+                  />
+                </div>
+
+                {/* Video Upload */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Featured Video (Optional)
+                  </label>
+                  {videoPreview ? (
+                    <div className="relative">
+                      <video
+                        src={videoPreview}
+                        className="w-full h-48 object-cover rounded-lg"
+                        controls
+                      />
+                      <Button
+                        isIconOnly
+                        size="sm"
+                        color="danger"
+                        className="absolute top-2 right-2"
+                        onPress={() => {
+                          setVideoPreview(null);
+                          if (videoInputRef.current) videoInputRef.current.value = "";
+                        }}
+                      >
+                        <X size={16} />
+                      </Button>
+                    </div>
+                  ) : (
+                    <label
+                      htmlFor="videoFile"
+                      className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary-500 hover:bg-primary-50 transition-colors"
+                    >
+                      <div className="flex flex-col items-center justify-center py-4">
+                        <Video size={32} className="text-gray-400 mb-2" />
+                        <p className="text-sm text-gray-500">Click to upload video</p>
+                        <p className="text-xs text-gray-400 mt-1">MP4, WebM up to 100MB</p>
+                      </div>
+                    </label>
+                  )}
+                  {/* File input always rendered so form submission includes the file */}
+                  <input
+                    ref={videoInputRef}
+                    id="videoFile"
+                    type="file"
+                    name="videoFile"
+                    accept="video/*"
+                    className="hidden"
+                    onChange={handleVideoChange}
+                  />
+                </div>
               </CardBody>
             </Card>
           </div>

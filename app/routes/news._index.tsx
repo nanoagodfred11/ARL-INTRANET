@@ -11,8 +11,6 @@ import {
   Chip,
   Input,
   Image,
-  Tabs,
-  Tab,
   Pagination,
 } from "@heroui/react";
 import { Search, Clock, Eye, ArrowRight } from "lucide-react";
@@ -35,11 +33,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   // Build query
   const query: Record<string, unknown> = {
     status: "published",
-    $or: [
-      { publishedAt: { $lte: new Date() } },
-      { publishedAt: null },
-    ],
   };
+
+  // Base conditions for published articles
+  const baseConditions = [
+    { publishedAt: { $lte: new Date() } },
+    { publishedAt: null },
+  ];
 
   if (category !== "all") {
     const cat = await NewsCategory.findOne({ slug: category });
@@ -48,8 +48,24 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
   }
 
+  // Fuzzy search using regex - searches title, excerpt, and content
   if (search) {
-    query.$text = { $search: search };
+    // Escape special regex characters and create case-insensitive pattern
+    const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const searchRegex = new RegExp(escapedSearch, "i");
+
+    query.$and = [
+      { $or: baseConditions },
+      {
+        $or: [
+          { title: searchRegex },
+          { excerpt: searchRegex },
+          { content: searchRegex },
+        ],
+      },
+    ];
+  } else {
+    query.$or = baseConditions;
   }
 
   // Get categories
@@ -122,9 +138,9 @@ export default function NewsListingPage() {
     useLoaderData<typeof loader>();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const handleCategoryChange = (key: React.Key) => {
+  const handleCategoryChange = (category: string) => {
     const params = new URLSearchParams(searchParams);
-    params.set("category", key.toString());
+    params.set("category", category);
     params.delete("page");
     setSearchParams(params);
   };
@@ -175,116 +191,87 @@ export default function NewsListingPage() {
           />
         </div>
 
-        {/* Featured News */}
-        {featuredNews.length > 0 && currentCategory === "all" && !searchQuery && (
-          <div className="grid gap-4 md:grid-cols-3">
-            {featuredNews.map((item, index) => (
-              <Link
-                key={item.id}
-                to={`/news/${item.slug}`}
-                className={index === 0 ? "md:col-span-2 md:row-span-2" : ""}
-              >
-                <Card className="h-full overflow-hidden shadow-sm transition-shadow hover:shadow-md">
-                  <div className={`relative ${index === 0 ? "h-64 md:h-full" : "h-32"}`}>
-                    <Image
-                      src={item.featuredImage || "https://via.placeholder.com/800x400?text=ARL+News"}
-                      alt={item.title}
-                      classNames={{
-                        wrapper: "w-full h-full",
-                        img: "w-full h-full object-cover",
-                      }}
-                      radius="none"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-4">
-                      <Chip
-                        size="sm"
-                        style={{ backgroundColor: item.category?.color }}
-                        className="mb-2 text-white"
-                      >
-                        {item.category?.name}
-                      </Chip>
-                      <h3 className={`font-bold text-white ${index === 0 ? "text-xl" : "text-sm"}`}>
-                        {item.title}
-                      </h3>
-                    </div>
-                  </div>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        )}
-
-        {/* Category Tabs */}
-        <Tabs
-          selectedKey={currentCategory}
-          onSelectionChange={handleCategoryChange}
-          variant="underlined"
-          classNames={{
-            tabList: "gap-4 flex-wrap",
-          }}
-        >
-          <Tab key="all" title="All News" />
+        {/* Category Filter Chips */}
+        <div className="flex flex-wrap gap-2">
+          <Chip
+            as="button"
+            variant={currentCategory === "all" ? "solid" : "flat"}
+            color={currentCategory === "all" ? "primary" : "default"}
+            className="cursor-pointer transition-all"
+            onClick={() => handleCategoryChange("all")}
+          >
+            All News
+          </Chip>
           {categories.map((cat) => (
-            <Tab key={cat.slug} title={cat.name} />
+            <Chip
+              key={cat.slug}
+              as="button"
+              variant={currentCategory === cat.slug ? "solid" : "flat"}
+              className="cursor-pointer transition-all"
+              style={
+                currentCategory === cat.slug
+                  ? { backgroundColor: cat.color, color: "white" }
+                  : { backgroundColor: `${cat.color}20`, color: cat.color }
+              }
+              onClick={() => handleCategoryChange(cat.slug)}
+            >
+              {cat.name}
+            </Chip>
           ))}
-        </Tabs>
+        </div>
 
         {/* News Grid */}
         {news.length > 0 ? (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {news.map((item) => (
               <Link key={item.id} to={`/news/${item.slug}`}>
-                <Card className="h-full overflow-hidden shadow-sm transition-shadow hover:shadow-md">
-                  <div className="relative h-48">
+                <Card className="h-full overflow-hidden shadow-sm transition-shadow hover:shadow-md group">
+                  {/* Image Section */}
+                  <div className="relative aspect-[16/10]">
                     <Image
                       src={item.featuredImage || "https://via.placeholder.com/400x200?text=ARL+News"}
                       alt={item.title}
                       classNames={{
                         wrapper: "w-full h-full",
-                        img: "w-full h-full object-cover",
+                        img: "w-full h-full object-cover group-hover:scale-105 transition-transform duration-300",
                       }}
                       radius="none"
                     />
-                    {item.isPinned && (
+                    {/* Badges on image */}
+                    <div className="absolute top-2 left-2 flex gap-2">
                       <Chip
                         size="sm"
-                        color="warning"
-                        className="absolute right-2 top-2"
+                        style={{ backgroundColor: item.category?.color || "#D4AF37" }}
+                        className="text-white font-medium"
                       >
-                        Pinned
+                        {item.category?.name}
                       </Chip>
-                    )}
+                      {item.isPinned && (
+                        <Chip size="sm" color="warning">
+                          Pinned
+                        </Chip>
+                      )}
+                    </div>
                   </div>
-                  <CardBody className="p-4">
-                    <Chip
-                      size="sm"
-                      variant="flat"
-                      style={{
-                        backgroundColor: `${item.category?.color}20`,
-                        color: item.category?.color,
-                      }}
-                      className="mb-2"
-                    >
-                      {item.category?.name}
-                    </Chip>
-                    <h3 className="mb-2 line-clamp-2 font-semibold text-gray-900">
+                  {/* Content Section - Solid Background */}
+                  <CardBody className="p-3 bg-white">
+                    <h3 className="line-clamp-2 font-semibold text-gray-900 text-sm">
                       {item.title}
                     </h3>
-                    <p className="line-clamp-2 text-sm text-gray-600">
+                    <p className="line-clamp-2 text-xs text-gray-600 mt-1">
                       {item.excerpt}
                     </p>
+                    <div className="flex items-center gap-3 mt-2 pt-2 border-t border-gray-100 text-xs text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <Clock size={11} />
+                        {formatDate(item.publishedAt)}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Eye size={11} />
+                        {item.views}
+                      </span>
+                    </div>
                   </CardBody>
-                  <CardFooter className="flex items-center justify-between border-t px-4 py-2">
-                    <div className="flex items-center gap-1 text-xs text-gray-500">
-                      <Clock size={12} />
-                      {formatDate(item.publishedAt)}
-                    </div>
-                    <div className="flex items-center gap-1 text-xs text-gray-500">
-                      <Eye size={12} />
-                      {item.views}
-                    </div>
-                  </CardFooter>
                 </Card>
               </Link>
             ))}

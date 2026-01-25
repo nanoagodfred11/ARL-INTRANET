@@ -1,27 +1,12 @@
-import { Avatar, Card, CardBody, CardHeader, Button, Progress, Input } from "@heroui/react";
-import { Users, TrendingUp, Star, ExternalLink, Search, AppWindow, Phone, ArrowRight } from "lucide-react";
+import { Card, CardBody, CardHeader, Button, Input, Chip, Image } from "@heroui/react";
+import { Shield, Star, ExternalLink, Search, AppWindow, Phone, ArrowRight, Calendar, PlayCircle, Volume2, Lightbulb, Video, UtensilsCrossed, Coffee, Sun, Moon, Clock, Play } from "lucide-react";
 import { Form, Link, useFetcher } from "react-router";
 import { useState, useEffect } from "react";
+import type { SerializedToolboxTalk } from "~/lib/services/toolbox-talk.server";
+import type { SerializedSafetyTip, SerializedSafetyVideo } from "~/lib/services/safety.server";
+import type { SerializedMenu, MealType } from "~/lib/utils/menu-constants";
+import { dietaryInfo, mealTimeInfo } from "~/lib/utils/menu-constants";
 
-const onlineColleagues = [
-  { name: "John Kwame", initials: "JK", department: "Operations" },
-  { name: "Mary Adjei", initials: "MA", department: "HR" },
-  { name: "Peter Owusu", initials: "PO", department: "Finance" },
-  { name: "Sarah Mensah", initials: "SM", department: "HSE" },
-  { name: "David Asante", initials: "DA", department: "IT" },
-];
-
-const poll = {
-  question: "What should be our next team building activity?",
-  options: [
-    { label: "Beach Outing", votes: 45 },
-    { label: "Sports Day", votes: 32 },
-    { label: "Cultural Event", votes: 18 },
-    { label: "Community Service", votes: 25 },
-  ],
-  totalVotes: 120,
-  endsIn: "2 days",
-};
 
 const featuredPosts = [
   {
@@ -54,20 +39,77 @@ interface QuickLink {
   clicks: number;
 }
 
+interface WeeklyTalkData {
+  talk: SerializedToolboxTalk | null;
+  weekRange: { start: string; end: string };
+}
+
+interface SafetyTipData {
+  tip: SerializedSafetyTip | null;
+}
+
+interface SafetyVideoData {
+  video: SerializedSafetyVideo | null;
+}
+
+interface MenuData {
+  menu: SerializedMenu | null;
+}
+
 export function RightSidebar() {
-  const maxVotes = Math.max(...poll.options.map((o) => o.votes));
   const [searchQuery, setSearchQuery] = useState("");
   const quickLinksFetcher = useFetcher<{ quickLinks: QuickLink[] }>();
+  const toolboxTalkFetcher = useFetcher<WeeklyTalkData>();
+  const safetyTipFetcher = useFetcher<SafetyTipData>();
+  const safetyVideoFetcher = useFetcher<SafetyVideoData>();
+  const menuFetcher = useFetcher<MenuData>();
 
-  // Fetch quick links on mount
+  // Fetch data on mount
   useEffect(() => {
     quickLinksFetcher.load("/api/quick-links");
+    toolboxTalkFetcher.load("/api/toolbox-talk-weekly");
+    safetyTipFetcher.load("/api/safety-tips?today=true");
+    safetyVideoFetcher.load("/api/safety-videos?featured=true");
+    menuFetcher.load("/api/menu?mode=today");
   }, []);
 
   const quickLinks = quickLinksFetcher.data?.quickLinks || [];
+  const weeklyTalk = toolboxTalkFetcher.data?.talk || null;
+  const weekRange = toolboxTalkFetcher.data?.weekRange;
+  const safetyTip = safetyTipFetcher.data?.tip || null;
+  const safetyVideo = safetyVideoFetcher.data?.video || null;
+  const todayMenu = menuFetcher.data?.menu || null;
+
+  // Get current meal based on time
+  const getCurrentMealType = (): MealType => {
+    const currentHour = new Date().getHours();
+    if (currentHour >= 15) return "dinner";
+    if (currentHour >= 11) return "lunch";
+    return "breakfast";
+  };
+
+  const currentMealType = getCurrentMealType();
+  const currentMeal = todayMenu?.meals.find((m) => m.type === currentMealType);
+
+  // Format video duration
+  const formatDuration = (seconds: number): string => {
+    if (!seconds) return "";
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  // Format week range for display
+  const formatWeekRange = () => {
+    if (!weekRange) return "Weekly safety briefing";
+    const startDate = new Date(weekRange.start);
+    const endDate = new Date(weekRange.end);
+    const options: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
+    return `${startDate.toLocaleDateString("en-US", options)} - ${endDate.toLocaleDateString("en-US", options)}`;
+  };
 
   return (
-    <aside className="sticky top-20 hidden w-72 shrink-0 xl:block">
+    <aside className="sticky top-20 hidden w-72 shrink-0 self-start max-h-[calc(100vh-6rem)] overflow-y-auto lg:block">
       {/* Directory Quick Search Widget - Task: 1.1.4.2.8 */}
       <Card className="mb-4 shadow-sm">
         <CardHeader className="pb-2">
@@ -116,7 +158,7 @@ export function RightSidebar() {
         </CardBody>
       </Card>
 
-      {/* Quick Links Widget - Task: 1.1.5.2.5 */}
+      {/* Apps Widget */}
       <Card className="mb-4 shadow-sm">
         <CardHeader className="pb-2">
           <div className="flex items-center gap-2">
@@ -124,8 +166,8 @@ export function RightSidebar() {
               <AppWindow size={16} className="text-purple-600" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-gray-900">Quick Links</h3>
-              <p className="text-xs text-gray-500">Popular apps & tools</p>
+              <h3 className="text-sm font-semibold text-gray-900">Apps</h3>
+              <p className="text-xs text-gray-500">Frequently used apps</p>
             </div>
           </div>
         </CardHeader>
@@ -160,7 +202,7 @@ export function RightSidebar() {
               ))}
             </div>
           ) : (
-            <p className="text-center text-xs text-gray-500">No quick links available</p>
+            <p className="text-center text-xs text-gray-500">No apps available</p>
           )}
           <Link
             to="/apps"
@@ -172,108 +214,390 @@ export function RightSidebar() {
         </CardBody>
       </Card>
 
-      {/* Poll Section */}
+      {/* Weekly Toolbox Talk */}
       <Card className="mb-4 shadow-sm">
         <CardHeader className="pb-2">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-100">
-              <TrendingUp size={16} className="text-primary-600" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-100">
+              <Shield size={16} className="text-green-600" />
             </div>
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900">Active Poll</h3>
-              <p className="text-xs text-gray-500">Ends in {poll.endsIn}</p>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-gray-900">This Week's Talk</h3>
+                {weeklyTalk && (
+                  <Chip size="sm" color="success" variant="flat" className="text-xs">
+                    Active
+                  </Chip>
+                )}
+              </div>
+              <p className="text-xs text-gray-500">{formatWeekRange()}</p>
             </div>
           </div>
         </CardHeader>
         <CardBody className="pt-0">
-          <p className="mb-3 text-sm font-medium text-gray-800">{poll.question}</p>
-          <div className="space-y-2">
-            {poll.options.map((option) => {
-              const percentage = Math.round((option.votes / poll.totalVotes) * 100);
-              const isLeading = option.votes === maxVotes;
-              return (
-                <div key={option.label} className="space-y-1">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className={isLeading ? "font-medium text-primary-700" : "text-gray-600"}>
-                      {option.label}
-                    </span>
-                    <span className="text-gray-500">{percentage}%</span>
+          {toolboxTalkFetcher.state === "loading" ? (
+            <div className="space-y-2">
+              <div className="h-20 animate-pulse rounded bg-gray-100" />
+              <div className="h-4 animate-pulse rounded bg-gray-100 w-3/4" />
+            </div>
+          ) : weeklyTalk ? (
+            <div className="space-y-3">
+              {/* Thumbnail */}
+              {weeklyTalk.featuredMedia?.url && (
+                <Link to={`/toolbox-talk/${weeklyTalk.slug}`} className="block">
+                  <div className="relative h-28 w-full overflow-hidden rounded-lg">
+                    <Image
+                      src={weeklyTalk.featuredMedia.thumbnail || weeklyTalk.featuredMedia.url}
+                      alt={weeklyTalk.title}
+                      className="h-full w-full object-cover"
+                      classNames={{ wrapper: "h-full w-full" }}
+                    />
+                    {(weeklyTalk.featuredMedia.type === "video" || weeklyTalk.featuredMedia.type === "audio") && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90">
+                          {weeklyTalk.featuredMedia.type === "video" ? (
+                            <PlayCircle size={20} className="text-green-600" />
+                          ) : (
+                            <Volume2 size={20} className="text-green-600" />
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <Progress
-                    size="sm"
-                    value={percentage}
-                    classNames={{
-                      indicator: isLeading ? "bg-primary-500" : "bg-gray-300",
-                      track: "bg-gray-100",
-                    }}
-                  />
+                </Link>
+              )}
+
+              {/* Title & Summary */}
+              <div>
+                <Link
+                  to={`/toolbox-talk/${weeklyTalk.slug}`}
+                  className="text-sm font-semibold text-gray-900 hover:text-primary-600 line-clamp-2"
+                >
+                  {weeklyTalk.title}
+                </Link>
+                <p className="mt-1 text-xs text-gray-600 line-clamp-2">{weeklyTalk.summary}</p>
+              </div>
+
+              {/* Tags */}
+              {weeklyTalk.tags && weeklyTalk.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {weeklyTalk.tags.slice(0, 2).map((tag) => (
+                    <Chip key={tag} size="sm" variant="flat" color="warning" className="text-xs">
+                      {tag}
+                    </Chip>
+                  ))}
                 </div>
-              );
-            })}
-          </div>
-          <p className="mt-3 text-center text-xs text-gray-500">
-            {poll.totalVotes} votes
-          </p>
-          <Button
-            size="sm"
-            variant="flat"
-            color="primary"
-            className="mt-2 w-full"
-          >
-            Vote Now
-          </Button>
+              )}
+
+              <Button
+                as={Link}
+                to={`/toolbox-talk/${weeklyTalk.slug}`}
+                color="success"
+                variant="flat"
+                size="sm"
+                className="w-full"
+                endContent={<ArrowRight size={14} />}
+              >
+                Read Talk
+              </Button>
+            </div>
+          ) : (
+            <div className="text-center py-3">
+              <Calendar size={28} className="mx-auto mb-2 text-gray-300" />
+              <p className="text-xs text-gray-500">No talk scheduled this week</p>
+              <Button
+                as={Link}
+                to="/toolbox-talk"
+                size="sm"
+                variant="flat"
+                color="primary"
+                className="mt-2"
+              >
+                View Archive
+              </Button>
+            </div>
+          )}
         </CardBody>
       </Card>
 
-      {/* Online Colleagues */}
+      {/* Safety Tip of the Day */}
       <Card className="mb-4 shadow-sm">
-        <CardHeader className="flex items-center justify-between pb-2">
+        <CardHeader className="pb-2">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-100">
-              <Users size={16} className="text-green-600" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100">
+              <Lightbulb size={16} className="text-emerald-600" />
             </div>
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900">Online Now</h3>
-              <p className="text-xs text-gray-500">{onlineColleagues.length} colleagues</p>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-gray-900">Safety Tip</h3>
+                {safetyTip && (
+                  <Chip size="sm" color="success" variant="flat" className="text-xs">
+                    Today
+                  </Chip>
+                )}
+              </div>
+              <p className="text-xs text-gray-500">Daily reminder</p>
             </div>
           </div>
         </CardHeader>
         <CardBody className="pt-0">
-          <div className="space-y-2">
-            {onlineColleagues.map((colleague) => (
-              <div
-                key={colleague.name}
-                className="flex items-center gap-2 rounded-lg p-2 transition-colors hover:bg-gray-50"
-              >
-                <div className="relative">
-                  <Avatar
-                    name={colleague.initials}
+          {safetyTipFetcher.state === "loading" ? (
+            <div className="space-y-2">
+              <div className="h-20 animate-pulse rounded bg-gray-100" />
+              <div className="h-4 animate-pulse rounded bg-gray-100 w-3/4" />
+            </div>
+          ) : safetyTip ? (
+            <div className="space-y-3">
+              {safetyTip.featuredImage && (
+                <Link to={`/safety-tips/${safetyTip.slug}`} className="block">
+                  <div className="relative h-24 w-full overflow-hidden rounded-lg">
+                    <img
+                      src={safetyTip.featuredImage}
+                      alt={safetyTip.title}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                </Link>
+              )}
+              <div>
+                {safetyTip.category && (
+                  <Chip
                     size="sm"
-                    classNames={{
-                      base: "bg-primary-100 text-primary-700 text-xs font-semibold",
+                    variant="flat"
+                    className="mb-1 text-xs"
+                    style={{
+                      backgroundColor: `${safetyTip.category.color}20`,
+                      color: safetyTip.category.color,
                     }}
-                  />
-                  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-green-500" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-gray-900">
-                    {colleague.name}
-                  </p>
-                  <p className="truncate text-xs text-gray-500">
-                    {colleague.department}
-                  </p>
-                </div>
+                  >
+                    {safetyTip.category.name}
+                  </Chip>
+                )}
+                <Link
+                  to={`/safety-tips/${safetyTip.slug}`}
+                  className="text-sm font-semibold text-gray-900 hover:text-emerald-600 line-clamp-2 block"
+                >
+                  {safetyTip.title}
+                </Link>
+                <p className="mt-1 text-xs text-gray-600 line-clamp-2">{safetyTip.summary}</p>
               </div>
-            ))}
+              <Button
+                as={Link}
+                to={`/safety-tips/${safetyTip.slug}`}
+                color="success"
+                variant="flat"
+                size="sm"
+                className="w-full"
+                endContent={<ArrowRight size={14} />}
+              >
+                Read Tip
+              </Button>
+            </div>
+          ) : (
+            <div className="text-center py-3">
+              <Lightbulb size={28} className="mx-auto mb-2 text-gray-300" />
+              <p className="text-xs text-gray-500">No tip available today</p>
+              <Button
+                as={Link}
+                to="/safety-tips"
+                size="sm"
+                variant="flat"
+                color="success"
+                className="mt-2"
+              >
+                Browse Tips
+              </Button>
+            </div>
+          )}
+        </CardBody>
+      </Card>
+
+      {/* Featured Safety Video */}
+      <Card className="mb-4 shadow-sm">
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100">
+              <Video size={16} className="text-blue-600" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-gray-900">Safety Video</h3>
+                {safetyVideo && (
+                  <Chip size="sm" color="primary" variant="flat" className="text-xs">
+                    Featured
+                  </Chip>
+                )}
+              </div>
+              <p className="text-xs text-gray-500">Watch & learn</p>
+            </div>
           </div>
-          <Button
-            size="sm"
-            variant="light"
-            className="mt-2 w-full text-gray-500"
-            endContent={<ExternalLink size={14} />}
-          >
-            View All
-          </Button>
+        </CardHeader>
+        <CardBody className="pt-0">
+          {safetyVideoFetcher.state === "loading" ? (
+            <div className="space-y-2">
+              <div className="h-24 animate-pulse rounded bg-gray-100" />
+              <div className="h-4 animate-pulse rounded bg-gray-100 w-3/4" />
+            </div>
+          ) : safetyVideo ? (
+            <div className="space-y-3">
+              <Link to={`/safety-videos?play=${safetyVideo.id}`} className="block">
+                <div className="relative h-28 w-full overflow-hidden rounded-lg bg-gray-100">
+                  {safetyVideo.thumbnail ? (
+                    <img
+                      src={safetyVideo.thumbnail}
+                      alt={safetyVideo.title}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100">
+                      <Video size={24} className="text-blue-300" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90">
+                      <Play size={18} className="text-blue-600 ml-0.5" />
+                    </div>
+                  </div>
+                  {safetyVideo.duration > 0 && (
+                    <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded flex items-center gap-1">
+                      <Clock size={10} />
+                      {formatDuration(safetyVideo.duration)}
+                    </div>
+                  )}
+                </div>
+              </Link>
+              <div>
+                {safetyVideo.category && (
+                  <Chip
+                    size="sm"
+                    variant="flat"
+                    className="mb-1 text-xs"
+                    style={{
+                      backgroundColor: `${safetyVideo.category.color}20`,
+                      color: safetyVideo.category.color,
+                    }}
+                  >
+                    {safetyVideo.category.name}
+                  </Chip>
+                )}
+                <h4 className="text-sm font-semibold text-gray-900 line-clamp-2">{safetyVideo.title}</h4>
+                <p className="mt-1 text-xs text-gray-600 line-clamp-2">{safetyVideo.description}</p>
+              </div>
+              <Button
+                as={Link}
+                to="/safety-videos"
+                color="primary"
+                variant="flat"
+                size="sm"
+                className="w-full"
+                endContent={<ArrowRight size={14} />}
+              >
+                View Videos
+              </Button>
+            </div>
+          ) : (
+            <div className="text-center py-3">
+              <Video size={28} className="mx-auto mb-2 text-gray-300" />
+              <p className="text-xs text-gray-500">No featured video</p>
+              <Button
+                as={Link}
+                to="/safety-videos"
+                size="sm"
+                variant="flat"
+                color="primary"
+                className="mt-2"
+              >
+                Browse Videos
+              </Button>
+            </div>
+          )}
+        </CardBody>
+      </Card>
+
+      {/* Today's Menu Widget */}
+      <Card className="mb-4 shadow-sm">
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100">
+                <UtensilsCrossed size={16} className="text-orange-600" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900">Today's Menu</h3>
+                <p className="text-xs text-gray-500">Canteen</p>
+              </div>
+            </div>
+            <Chip size="sm" color="warning" variant="flat" className="text-xs">
+              {mealTimeInfo[currentMealType].label}
+            </Chip>
+          </div>
+        </CardHeader>
+        <CardBody className="pt-0">
+          {menuFetcher.state === "loading" ? (
+            <div className="space-y-2">
+              <div className="h-4 animate-pulse rounded bg-gray-100" />
+              <div className="h-4 animate-pulse rounded bg-gray-100 w-4/5" />
+              <div className="h-4 animate-pulse rounded bg-gray-100 w-3/5" />
+            </div>
+          ) : todayMenu && currentMeal ? (
+            <div className="space-y-3">
+              <ul className="space-y-1.5">
+                {currentMeal.items
+                  .filter((item) => item.isAvailable)
+                  .slice(0, 4)
+                  .map((item, index) => (
+                    <li key={index} className="flex items-center gap-2">
+                      <span className="text-orange-500 text-xs">•</span>
+                      <span className="text-xs text-gray-700 flex-1 truncate">{item.name}</span>
+                      <div className="flex gap-0.5">
+                        {item.dietary.slice(0, 2).map((d) => (
+                          <span key={d} title={dietaryInfo[d]?.label || d} className="text-xs">
+                            {dietaryInfo[d]?.icon || ""}
+                          </span>
+                        ))}
+                      </div>
+                    </li>
+                  ))}
+              </ul>
+              {currentMeal.items.filter((i) => i.isAvailable).length > 4 && (
+                <p className="text-xs text-gray-500">
+                  +{currentMeal.items.filter((i) => i.isAvailable).length - 4} more items
+                </p>
+              )}
+              <div className="flex items-center justify-between text-xs text-gray-500 border-t pt-2">
+                <span>
+                  {currentMeal.startTime || mealTimeInfo[currentMealType].defaultStart} -{" "}
+                  {currentMeal.endTime || mealTimeInfo[currentMealType].defaultEnd}
+                </span>
+              </div>
+              <Button
+                as={Link}
+                to="/canteen"
+                color="warning"
+                variant="flat"
+                size="sm"
+                className="w-full"
+                endContent={<ArrowRight size={14} />}
+              >
+                Full Menu
+              </Button>
+            </div>
+          ) : (
+            <div className="text-center py-3">
+              <UtensilsCrossed size={28} className="mx-auto mb-2 text-gray-300" />
+              <p className="text-xs text-gray-500">No menu available today</p>
+              <Button
+                as={Link}
+                to="/canteen"
+                size="sm"
+                variant="flat"
+                color="warning"
+                className="mt-2"
+              >
+                View Menu
+              </Button>
+            </div>
+          )}
         </CardBody>
       </Card>
 

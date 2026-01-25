@@ -20,6 +20,8 @@ export async function connectToDatabase(): Promise<typeof mongoose> {
 
   cached = mongoose.connect(MONGODB_URI, {
     bufferCommands: false,
+    serverSelectionTimeoutMS: 5000, // Fail fast if MongoDB not available
+    connectTimeoutMS: 5000,
   });
 
   global.__mongoConnection = cached;

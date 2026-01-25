@@ -61,6 +61,11 @@ export async function requestOTP(phone: string): Promise<OTPResult> {
   const otpCode = generateOTPCode();
   const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
 
+  // DEV ONLY: Log OTP to console for testing (remove in production)
+  console.log(`\n========================================`);
+  console.log(`DEV OTP for ${formattedPhone}: ${otpCode}`);
+  console.log(`========================================\n`);
+
   // Save OTP to database
   await OTP.create({
     phone: formattedPhone,

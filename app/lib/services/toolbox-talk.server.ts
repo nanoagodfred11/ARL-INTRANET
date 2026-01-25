@@ -75,6 +75,59 @@ export async function getTodaysToolboxTalk(): Promise<IToolboxTalk | null> {
 }
 
 // ============================================
+// Weekly Toolbox Talk - Get talk for current week
+// ============================================
+
+export async function getThisWeeksToolboxTalk(): Promise<IToolboxTalk | null> {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Get start of week (Monday)
+  const dayOfWeek = today.getDay();
+  const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+  const weekStart = new Date(today);
+  weekStart.setDate(today.getDate() - daysToMonday);
+
+  // Get end of week (Sunday)
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 7);
+
+  // Find a published talk scheduled for this week
+  return ToolboxTalk.findOne({
+    status: "published",
+    scheduledDate: {
+      $gte: weekStart,
+      $lt: weekEnd,
+    },
+  })
+    .sort({ scheduledDate: -1 }) // Get most recent one if multiple
+    .populate("author");
+}
+
+// Get week date range info
+export function getWeekDateRange(): { start: Date; end: Date; weekNumber: number } {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Get start of week (Monday)
+  const dayOfWeek = today.getDay();
+  const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+  const weekStart = new Date(today);
+  weekStart.setDate(today.getDate() - daysToMonday);
+
+  // Get end of week (Sunday)
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+
+  // Calculate week number
+  const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
+  const pastDaysOfYear = (today.getTime() - firstDayOfYear.getTime()) / 86400000;
+  const weekNumber = Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+
+  return { start: weekStart, end: weekEnd, weekNumber };
+}
+
+// ============================================
 // Task: 1.2.1.1.2 - GET /api/toolbox-talks endpoint (with date filter)
 // ============================================
 

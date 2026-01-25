@@ -16,10 +16,44 @@ import { Clock, Eye, ArrowLeft, Share2, Bookmark, ChevronLeft, ChevronRight } fr
 import type { LoaderFunctionArgs } from "react-router";
 import { useLoaderData, Link } from "react-router";
 import { MainLayout } from "~/components/layout";
-import { connectDB } from "~/lib/db/connection.server";
-import { News, NewsCategory } from "~/lib/db/models/news.server";
+
+// Types for loader data
+interface ArticleData {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt?: string;
+  featuredImage?: string;
+  images?: string[];
+  category?: { name: string; slug: string; color: string };
+  author?: { name: string };
+  publishedAt: string | null;
+  views: number;
+  isPinned: boolean;
+  isFeatured: boolean;
+}
+
+interface RelatedNewsItem {
+  id: string;
+  title: string;
+  slug: string;
+  featuredImage?: string;
+  category?: { name: string; slug: string; color: string };
+  publishedAt: string | null;
+}
+
+interface LoaderData {
+  article: ArticleData;
+  relatedNews: RelatedNewsItem[];
+  prevArticle: { title: string; slug: string } | null;
+  nextArticle: { title: string; slug: string } | null;
+}
 
 export async function loader({ params }: LoaderFunctionArgs) {
+  const { connectDB } = await import("~/lib/db/connection.server");
+  const { News } = await import("~/lib/db/models/news.server");
+
   await connectDB();
 
   const { slug } = params;
@@ -94,7 +128,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 }
 
 export default function NewsDetailPage() {
-  const { article, relatedNews, prevArticle, nextArticle } = useLoaderData<typeof loader>();
+  const { article, relatedNews, prevArticle, nextArticle } = useLoaderData<LoaderData>();
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "";

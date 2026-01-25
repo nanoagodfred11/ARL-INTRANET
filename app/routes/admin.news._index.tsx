@@ -28,7 +28,7 @@ import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { useLoaderData, useSearchParams, Link, Form, useNavigation } from "react-router";
 import { requireAuth } from "~/lib/services/session.server";
 import { connectDB } from "~/lib/db/connection.server";
-import { News, NewsCategory } from "~/lib/db/models/news.server";
+import { News } from "~/lib/db/models/news.server";
 
 const ITEMS_PER_PAGE = 10;
 

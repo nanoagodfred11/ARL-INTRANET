@@ -16,12 +16,17 @@ import {
   Chip,
   Button,
   Pagination,
-  Divider,
   Modal,
   ModalContent,
   ModalHeader,
   ModalBody,
   ModalFooter,
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
 } from "@heroui/react";
 import {
   Search,
@@ -30,7 +35,6 @@ import {
   Building2,
   AlertTriangle,
   User,
-  X,
 } from "lucide-react";
 import { MainLayout } from "~/components/layout";
 import { connectDB } from "~/lib/db/connection.server";
@@ -268,77 +272,102 @@ export default function DirectoryPage() {
           </p>
         </div>
 
-        {/* Contact Grid */}
+        {/* Contact Table */}
         {contacts.length > 0 ? (
           <>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {contacts.map((contact: IContact) => (
-                <Card
-                  key={contact._id.toString()}
-                  isPressable
-                  onPress={() => setSelectedContact(contact)}
-                  className="hover:shadow-md transition-shadow"
+            <Card className="shadow-sm">
+              <CardBody className="p-0">
+                <Table
+                  aria-label="Company Directory"
+                  selectionMode="single"
+                  onRowAction={(key) => {
+                    const contact = contacts.find((c: IContact) => c._id.toString() === key);
+                    if (contact) setSelectedContact(contact);
+                  }}
+                  classNames={{
+                    wrapper: "shadow-none",
+                    tr: "cursor-pointer hover:bg-gray-50",
+                  }}
                 >
-                  <CardBody className="gap-3">
-                    <div className="flex items-start gap-3">
-                      <Avatar
-                        name={`${contact.firstName} ${contact.lastName}`}
-                        src={contact.photo}
-                        size="lg"
-                        classNames={{
-                          base: "bg-primary-100 text-primary-700 font-semibold",
-                        }}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <h3 className="truncate font-semibold text-gray-900">
-                            {contact.firstName} {contact.lastName}
-                          </h3>
-                          {contact.isEmergencyContact && (
-                            <AlertTriangle
-                              size={14}
-                              className="shrink-0 text-warning-500"
+                  <TableHeader>
+                    <TableColumn>NAME</TableColumn>
+                    <TableColumn>POSITION</TableColumn>
+                    <TableColumn>DEPARTMENT</TableColumn>
+                    <TableColumn>PHONE</TableColumn>
+                    <TableColumn>EXT</TableColumn>
+                    <TableColumn className="hidden md:table-cell">EMAIL</TableColumn>
+                  </TableHeader>
+                  <TableBody>
+                    {contacts.map((contact: IContact) => (
+                      <TableRow key={contact._id.toString()}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar
+                              name={`${contact.firstName} ${contact.lastName}`}
+                              src={contact.photo}
+                              size="sm"
+                              classNames={{
+                                base: "bg-primary-100 text-primary-700 font-semibold",
+                              }}
                             />
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-gray-900">
+                                {contact.firstName} {contact.lastName}
+                              </span>
+                              {contact.isEmergencyContact && (
+                                <AlertTriangle
+                                  size={14}
+                                  className="shrink-0 text-warning-500"
+                                />
+                              )}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-gray-600">{contact.position}</span>
+                        </TableCell>
+                        <TableCell>
+                          <Chip size="sm" variant="flat" color="primary">
+                            {(contact.department as IDepartment)?.name}
+                          </Chip>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <Phone size={14} className="text-gray-400" />
+                            <span className="text-gray-700">{contact.phone}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {contact.phoneExtension ? (
+                            <span className="text-gray-700 font-medium">
+                              {contact.phoneExtension}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">-</span>
                           )}
-                        </div>
-                        <p className="truncate text-sm text-gray-600">
-                          {contact.position}
-                        </p>
-                        <p className="truncate text-xs text-gray-500">
-                          {(contact.department as IDepartment)?.name}
-                        </p>
-                      </div>
-                    </div>
-
-                    <Divider />
-
-                    <div className="space-y-1.5">
-                      <div className="flex items-center gap-2 text-sm">
-                        <Phone size={14} className="shrink-0 text-gray-400" />
-                        <span className="text-gray-700">{contact.phone}</span>
-                        {contact.phoneExtension && (
-                          <span className="text-gray-500">
-                            ext. {contact.phoneExtension}
-                          </span>
-                        )}
-                      </div>
-                      {contact.email && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <Mail size={14} className="shrink-0 text-gray-400" />
-                          <span className="truncate text-gray-700">
-                            {contact.email}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </CardBody>
-                </Card>
-              ))}
-            </div>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          {contact.email ? (
+                            <div className="flex items-center gap-1">
+                              <Mail size={14} className="text-gray-400" />
+                              <span className="text-gray-700 truncate max-w-[200px]">
+                                {contact.email}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardBody>
+            </Card>
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="mt-8 flex justify-center">
+              <div className="mt-6 flex justify-center">
                 <Pagination
                   total={totalPages}
                   page={page}

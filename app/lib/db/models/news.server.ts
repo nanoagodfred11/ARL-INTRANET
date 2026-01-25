@@ -20,6 +20,7 @@ export interface INews extends Document {
   author: Types.ObjectId;
   images: string[];
   featuredImage?: string;
+  featuredVideo?: string;
   status: "draft" | "published" | "archived";
   isFeatured: boolean;
   isPinned: boolean;
@@ -105,6 +106,9 @@ const NewsSchema = new Schema<INews>(
       type: String,
     }],
     featuredImage: {
+      type: String,
+    },
+    featuredVideo: {
       type: String,
     },
     status: {

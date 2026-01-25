@@ -437,7 +437,8 @@ export default function AdminDirectory() {
               <TableColumn>NAME</TableColumn>
               <TableColumn>DEPARTMENT</TableColumn>
               <TableColumn>POSITION</TableColumn>
-              <TableColumn>CONTACT</TableColumn>
+              <TableColumn>PHONE</TableColumn>
+              <TableColumn>EXT</TableColumn>
               <TableColumn>STATUS</TableColumn>
               <TableColumn align="end">ACTIONS</TableColumn>
             </TableHeader>
@@ -483,14 +484,14 @@ export default function AdminDirectory() {
                     <span className="text-sm">{contact.position}</span>
                   </TableCell>
                   <TableCell>
-                    <div className="text-sm">
-                      <div>{contact.phone}</div>
-                      {contact.phoneExtension && (
-                        <span className="text-xs text-gray-500">
-                          ext. {contact.phoneExtension}
-                        </span>
-                      )}
-                    </div>
+                    <span className="text-sm">{contact.phone}</span>
+                  </TableCell>
+                  <TableCell>
+                    {contact.phoneExtension ? (
+                      <span className="text-sm font-medium">{contact.phoneExtension}</span>
+                    ) : (
+                      <span className="text-gray-400">-</span>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Chip

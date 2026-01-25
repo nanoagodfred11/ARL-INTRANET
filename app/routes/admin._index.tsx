@@ -12,37 +12,132 @@ import {
   TrendingUp,
   Clock,
   AlertTriangle,
+  Calendar,
+  Image,
+  HardHat,
 } from "lucide-react";
 import type { LoaderFunctionArgs } from "react-router";
-import { useLoaderData } from "react-router";
+import { useLoaderData, Link } from "react-router";
 import { requireAuth } from "~/lib/services/session.server";
+import { connectDB } from "~/lib/db/connection.server";
+import { News } from "~/lib/db/models/news.server";
+import { Contact } from "~/lib/db/models/contact.server";
+import { AppLink } from "~/lib/db/models/app-link.server";
+import { Alert } from "~/lib/db/models/alert.server";
+import { Event } from "~/lib/db/models/event.server";
+import { Album } from "~/lib/db/models/gallery.server";
+import { ToolboxTalk } from "~/lib/db/models/toolbox-talk.server";
+import { ActivityLog } from "~/lib/db/models/activity-log.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await requireAuth(request);
+  await connectDB();
 
-  // TODO: Fetch actual stats from database
+  // Fetch live stats from database
+  const [
+    newsCount,
+    contactsCount,
+    appsCount,
+    activeAlertsCount,
+    eventsCount,
+    albumsCount,
+    toolboxTalksCount,
+    recentActivityLogs,
+  ] = await Promise.all([
+    News.countDocuments({ status: "published" }),
+    Contact.countDocuments({ isActive: true }),
+    AppLink.countDocuments({ isActive: true }),
+    Alert.countDocuments({ isActive: true }),
+    Event.countDocuments({ status: "published" }),
+    Album.countDocuments({ status: "published" }),
+    ToolboxTalk.countDocuments({ status: "published" }),
+    ActivityLog.find()
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .lean(),
+  ]);
+
   const stats = {
-    news: 24,
-    contacts: 1200,
-    apps: 15,
-    safetyAlerts: 3,
+    news: newsCount,
+    contacts: contactsCount,
+    apps: appsCount,
+    safetyAlerts: activeAlertsCount,
+    events: eventsCount,
+    albums: albumsCount,
+    toolboxTalks: toolboxTalksCount,
   };
 
-  const recentActivity = [
-    { action: "New article published", time: "2 hours ago", type: "news" },
-    { action: "Contact directory updated", time: "5 hours ago", type: "directory" },
-    { action: "Safety alert activated", time: "1 day ago", type: "safety" },
-    { action: "New app link added", time: "2 days ago", type: "app" },
-  ];
+  // Format recent activity from activity logs
+  const recentActivity = recentActivityLogs.map((log) => {
+    const actionText = getActionText(log.action, log.resource, log.details);
+    const timeAgo = getTimeAgo(log.createdAt);
+    const type = getActivityType(log.resource);
+    return { action: actionText, time: timeAgo, type };
+  });
 
-  return Response.json({
+  return {
     user: {
       name: user.name,
       role: user.role,
     },
     stats,
     recentActivity,
-  });
+  };
+}
+
+function getActionText(action: string, resource: string, details?: Record<string, unknown>): string {
+  const resourceName = details?.name || details?.title || resource;
+  switch (action) {
+    case "create":
+      return `New ${resource} created: ${resourceName}`;
+    case "update":
+      return `${resource} updated: ${resourceName}`;
+    case "delete":
+      return `${resource} deleted: ${resourceName}`;
+    case "login":
+      return "Admin logged in";
+    case "logout":
+      return "Admin logged out";
+    default:
+      return `${action} on ${resource}`;
+  }
+}
+
+function getTimeAgo(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - new Date(date).getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return "Just now";
+  if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? "s" : ""} ago`;
+  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+  if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+  return new Date(date).toLocaleDateString();
+}
+
+function getActivityType(resource: string): string {
+  switch (resource) {
+    case "news":
+      return "news";
+    case "contact":
+    case "directory":
+      return "directory";
+    case "alert":
+    case "safety":
+      return "safety";
+    case "applink":
+    case "app":
+      return "app";
+    case "event":
+      return "event";
+    case "album":
+    case "gallery":
+      return "gallery";
+    default:
+      return "other";
+  }
 }
 
 export default function AdminDashboard() {
@@ -75,7 +170,28 @@ export default function AdminDashboard() {
       value: stats.safetyAlerts,
       icon: AlertTriangle,
       color: "bg-orange-500",
-      href: "/admin/safety",
+      href: "/admin/alerts",
+    },
+    {
+      label: "Events",
+      value: stats.events,
+      icon: Calendar,
+      color: "bg-teal-500",
+      href: "/admin/events",
+    },
+    {
+      label: "Photo Albums",
+      value: stats.albums,
+      icon: Image,
+      color: "bg-pink-500",
+      href: "/admin/gallery",
+    },
+    {
+      label: "Toolbox Talks",
+      value: stats.toolboxTalks,
+      icon: HardHat,
+      color: "bg-amber-500",
+      href: "/admin/toolbox-talks",
     },
   ];
 
@@ -94,7 +210,7 @@ export default function AdminDashboard() {
       </Card>
 
       {/* Stats Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
         {statCards.map((stat) => (
           <Card key={stat.label} className="shadow-sm">
             <CardBody className="flex flex-row items-center gap-4">
@@ -164,42 +280,42 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardBody className="pt-0">
             <div className="grid grid-cols-2 gap-3">
-              <a
-                href="/admin/news/new"
+              <Link
+                to="/admin/news/new"
                 className="flex flex-col items-center gap-2 rounded-lg border-2 border-dashed border-gray-200 p-4 text-center transition-colors hover:border-primary-300 hover:bg-primary-50"
               >
                 <Newspaper size={24} className="text-primary-500" />
                 <span className="text-sm font-medium text-gray-700">
                   Add News
                 </span>
-              </a>
-              <a
-                href="/admin/directory/new"
+              </Link>
+              <Link
+                to="/admin/events/new"
                 className="flex flex-col items-center gap-2 rounded-lg border-2 border-dashed border-gray-200 p-4 text-center transition-colors hover:border-primary-300 hover:bg-primary-50"
               >
-                <Users size={24} className="text-primary-500" />
+                <Calendar size={24} className="text-primary-500" />
                 <span className="text-sm font-medium text-gray-700">
-                  Add Contact
+                  Add Event
                 </span>
-              </a>
-              <a
-                href="/admin/apps/new"
+              </Link>
+              <Link
+                to="/admin/gallery/new"
                 className="flex flex-col items-center gap-2 rounded-lg border-2 border-dashed border-gray-200 p-4 text-center transition-colors hover:border-primary-300 hover:bg-primary-50"
               >
-                <AppWindow size={24} className="text-primary-500" />
+                <Image size={24} className="text-primary-500" />
                 <span className="text-sm font-medium text-gray-700">
-                  Add App Link
+                  Add Album
                 </span>
-              </a>
-              <a
-                href="/admin/safety/new"
+              </Link>
+              <Link
+                to="/admin/alerts/new"
                 className="flex flex-col items-center gap-2 rounded-lg border-2 border-dashed border-gray-200 p-4 text-center transition-colors hover:border-primary-300 hover:bg-primary-50"
               >
                 <Shield size={24} className="text-primary-500" />
                 <span className="text-sm font-medium text-gray-700">
                   Add Alert
                 </span>
-              </a>
+              </Link>
             </div>
           </CardBody>
         </Card>

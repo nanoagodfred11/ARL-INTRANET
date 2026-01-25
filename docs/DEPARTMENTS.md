@@ -83,3 +83,5 @@ INSERT INTO departments (name, code, description) VALUES
 ('Exploration', 'EXPLOR', 'Mineral exploration'),
 ('Engineering', 'ENG', 'Engineering services and projects');
 ```
+    
+    

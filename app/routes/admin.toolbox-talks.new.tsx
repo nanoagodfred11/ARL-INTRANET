@@ -1,9 +1,9 @@
 /**
  * Admin Toolbox Talk Creation Page
- * Task: 1.2.1.4.2-4
+ * Task: 1.2.1.4.2-4, 1.2.1.2.4 (Video thumbnail auto-generation)
  */
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardBody,
@@ -15,20 +15,25 @@ import {
   SelectItem,
   Chip,
   Divider,
+  Spinner,
 } from "@heroui/react";
-import { ArrowLeft, Save, Calendar, Upload, X, Video, Volume2, Image } from "lucide-react";
+import { ArrowLeft, Save, Calendar, Upload, X, Video, Volume2, Image, RefreshCw } from "lucide-react";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { useLoaderData, useActionData, useNavigation, Form, Link, redirect } from "react-router";
-import { requireAuth, getSessionData } from "~/lib/services/session.server";
-import { connectDB } from "~/lib/db/connection.server";
-import { generateUniqueSlug, createToolboxTalk } from "~/lib/services/toolbox-talk.server";
+import { RichTextEditor } from "~/components/admin";
 
 export async function loader({ request }: LoaderFunctionArgs) {
+  const { requireAuth } = await import("~/lib/services/session.server");
   await requireAuth(request);
   return Response.json({});
 }
 
 export async function action({ request }: ActionFunctionArgs) {
+  const { requireAuth, getSessionData } = await import("~/lib/services/session.server");
+  const { connectDB } = await import("~/lib/db/connection.server");
+  const { generateUniqueSlug, createToolboxTalk } = await import("~/lib/services/toolbox-talk.server");
+  const { uploadThumbnailFromBase64 } = await import("~/lib/services/upload.server");
+
   await requireAuth(request);
   const sessionData = await getSessionData(request);
   await connectDB();
@@ -43,6 +48,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const tagsStr = formData.get("tags") as string;
   const featuredMediaUrl = formData.get("featuredMediaUrl") as string;
   const featuredMediaType = formData.get("featuredMediaType") as "image" | "video" | "audio";
+  const thumbnailDataUrl = formData.get("thumbnailDataUrl") as string;
 
   // Validation
   if (!title || !content || !scheduledDate) {
@@ -60,9 +66,22 @@ export async function action({ request }: ActionFunctionArgs) {
     ? tagsStr.split(",").map((t) => t.trim()).filter(Boolean)
     : [];
 
+  // Task: 1.2.1.2.4 - Handle thumbnail upload for videos
+  let thumbnailUrl: string | undefined;
+  if (thumbnailDataUrl && featuredMediaType === "video") {
+    const thumbnailResult = await uploadThumbnailFromBase64(thumbnailDataUrl);
+    if (thumbnailResult.success && thumbnailResult.url) {
+      thumbnailUrl = thumbnailResult.url;
+    }
+  }
+
   // Build featured media object if provided
   const featuredMedia = featuredMediaUrl && featuredMediaType
-    ? { type: featuredMediaType, url: featuredMediaUrl }
+    ? {
+        type: featuredMediaType,
+        url: featuredMediaUrl,
+        ...(thumbnailUrl && { thumbnail: thumbnailUrl }),
+      }
     : undefined;
 
   // Create toolbox talk using service
@@ -89,6 +108,61 @@ export default function AdminToolboxTalkNewPage() {
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [mediaType, setMediaType] = useState<"image" | "video" | "audio" | "">("");
+
+  // Task: 1.2.1.2.4 - Video thumbnail state
+  const [videoUrl, setVideoUrl] = useState("");
+  const [thumbnailDataUrl, setThumbnailDataUrl] = useState<string | null>(null);
+  const [isGeneratingThumbnail, setIsGeneratingThumbnail] = useState(false);
+  const [thumbnailError, setThumbnailError] = useState<string | null>(null);
+
+  // Auto-generate thumbnail when video URL changes
+  const generateThumbnail = useCallback(async (url: string) => {
+    if (!url || mediaType !== "video") return;
+
+    setIsGeneratingThumbnail(true);
+    setThumbnailError(null);
+
+    try {
+      // Dynamic import to avoid SSR issues
+      const { generateThumbnailFromUrl, getDefaultVideoThumbnail } = await import(
+        "~/lib/utils/video-thumbnail"
+      );
+
+      const result = await generateThumbnailFromUrl(url);
+
+      if (result.success && result.dataUrl) {
+        setThumbnailDataUrl(result.dataUrl);
+      } else {
+        // Use default placeholder if generation fails
+        setThumbnailDataUrl(getDefaultVideoThumbnail());
+        setThumbnailError(result.error || "Could not generate thumbnail");
+      }
+    } catch (err) {
+      setThumbnailError("Failed to generate thumbnail");
+      // Try to set default thumbnail
+      try {
+        const { getDefaultVideoThumbnail } = await import("~/lib/utils/video-thumbnail");
+        setThumbnailDataUrl(getDefaultVideoThumbnail());
+      } catch {
+        // Ignore if default also fails
+      }
+    } finally {
+      setIsGeneratingThumbnail(false);
+    }
+  }, [mediaType]);
+
+  // Effect to generate thumbnail when video URL is entered
+  useEffect(() => {
+    if (videoUrl && mediaType === "video") {
+      const timeoutId = setTimeout(() => {
+        generateThumbnail(videoUrl);
+      }, 500); // Debounce 500ms
+      return () => clearTimeout(timeoutId);
+    } else {
+      setThumbnailDataUrl(null);
+      setThumbnailError(null);
+    }
+  }, [videoUrl, mediaType, generateThumbnail]);
 
   const addTag = () => {
     if (tagInput.trim() && !tags.includes(tagInput.trim())) {
@@ -162,14 +236,12 @@ export default function AdminToolboxTalkNewPage() {
                   classNames={{ inputWrapper: "bg-gray-50" }}
                 />
 
-                <Textarea
+                <RichTextEditor
                   name="content"
                   label="Content"
-                  placeholder="Write your toolbox talk content here... (HTML supported)"
-                  minRows={10}
+                  placeholder="Write your toolbox talk content here..."
                   isRequired
-                  classNames={{ inputWrapper: "bg-gray-50" }}
-                  description="You can use HTML tags for formatting"
+                  minHeight="250px"
                 />
               </CardBody>
             </Card>
@@ -213,6 +285,10 @@ export default function AdminToolboxTalkNewPage() {
                 {mediaType && (
                   <>
                     <input type="hidden" name="featuredMediaType" value={mediaType} />
+                    {/* Task: 1.2.1.2.4 - Hidden input for auto-generated thumbnail */}
+                    {thumbnailDataUrl && mediaType === "video" && (
+                      <input type="hidden" name="thumbnailDataUrl" value={thumbnailDataUrl} />
+                    )}
                     <Input
                       name="featuredMediaUrl"
                       label={`${mediaType.charAt(0).toUpperCase() + mediaType.slice(1)} URL`}
@@ -225,12 +301,75 @@ export default function AdminToolboxTalkNewPage() {
                       }
                       description={`Enter the URL of the ${mediaType} file`}
                       classNames={{ inputWrapper: "bg-gray-50" }}
+                      value={mediaType === "video" ? videoUrl : undefined}
+                      onValueChange={mediaType === "video" ? setVideoUrl : undefined}
                     />
+
+                    {/* Task: 1.2.1.2.4 - Video thumbnail preview */}
+                    {mediaType === "video" && videoUrl && (
+                      <div className="rounded-lg border border-gray-200 p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-gray-700">
+                            Video Thumbnail
+                          </span>
+                          <Button
+                            size="sm"
+                            variant="light"
+                            isDisabled={isGeneratingThumbnail}
+                            startContent={
+                              isGeneratingThumbnail ? (
+                                <Spinner size="sm" />
+                              ) : (
+                                <RefreshCw size={14} />
+                              )
+                            }
+                            onPress={() => generateThumbnail(videoUrl)}
+                          >
+                            {isGeneratingThumbnail ? "Generating..." : "Regenerate"}
+                          </Button>
+                        </div>
+
+                        {isGeneratingThumbnail && !thumbnailDataUrl && (
+                          <div className="flex h-32 items-center justify-center rounded bg-gray-100">
+                            <div className="text-center">
+                              <Spinner size="md" />
+                              <p className="mt-2 text-xs text-gray-500">
+                                Generating thumbnail...
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        {thumbnailDataUrl && (
+                          <div className="relative">
+                            <img
+                              src={thumbnailDataUrl}
+                              alt="Video thumbnail"
+                              className="h-32 w-auto rounded object-cover"
+                            />
+                            {thumbnailError && (
+                              <p className="mt-1 text-xs text-amber-600">
+                                {thumbnailError} (using placeholder)
+                              </p>
+                            )}
+                          </div>
+                        )}
+
+                        {!thumbnailDataUrl && !isGeneratingThumbnail && (
+                          <div className="flex h-32 items-center justify-center rounded bg-gray-100">
+                            <p className="text-xs text-gray-500">
+                              Thumbnail will be generated automatically
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </>
                 )}
 
                 <p className="text-xs text-gray-500">
                   Tip: Upload files using the media library first, then paste the URL here.
+                  {mediaType === "video" && " A thumbnail will be auto-generated from the video."}
                 </p>
               </CardBody>
             </Card>

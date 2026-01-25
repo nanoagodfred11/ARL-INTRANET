@@ -3,7 +3,7 @@
  * Task: 1.1.3.4.4
  */
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Card,
   CardBody,
@@ -16,15 +16,46 @@ import {
   Switch,
   Divider,
   Chip,
+  Image,
 } from "@heroui/react";
-import { ArrowLeft, Save, Eye, Trash2 } from "lucide-react";
+import { ArrowLeft, Save, Eye, Trash2, ImagePlus, X } from "lucide-react";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { useLoaderData, useActionData, useNavigation, Form, Link, redirect } from "react-router";
-import { requireAuth } from "~/lib/services/session.server";
-import { connectDB } from "~/lib/db/connection.server";
-import { News, NewsCategory } from "~/lib/db/models/news.server";
+import { RichTextEditor } from "~/components/admin";
+
+// Types for loader data
+interface ArticleData {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt?: string;
+  featuredImage?: string;
+  category: string;
+  status: string;
+  isFeatured: boolean;
+  isPinned: boolean;
+  views: number;
+  createdAt: string | null;
+  publishedAt: string | null;
+}
+
+interface CategoryData {
+  id: string;
+  name: string;
+}
+
+interface LoaderData {
+  article: ArticleData;
+  categories: CategoryData[];
+  successMessage: string | null;
+}
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
+  const { requireAuth } = await import("~/lib/services/session.server");
+  const { connectDB } = await import("~/lib/db/connection.server");
+  const { News, NewsCategory } = await import("~/lib/db/models/news.server");
+
   await requireAuth(request);
   await connectDB();
 
@@ -67,6 +98,11 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
+  const { requireAuth } = await import("~/lib/services/session.server");
+  const { connectDB } = await import("~/lib/db/connection.server");
+  const { News } = await import("~/lib/db/models/news.server");
+  const { uploadImage } = await import("~/lib/services/upload.server");
+
   await requireAuth(request);
   await connectDB();
 
@@ -83,10 +119,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const content = formData.get("content") as string;
   const excerpt = formData.get("excerpt") as string;
   const categoryId = formData.get("category") as string;
-  const featuredImage = formData.get("featuredImage") as string;
   const status = formData.get("status") as "draft" | "published";
   const isFeatured = formData.get("isFeatured") === "true";
   const isPinned = formData.get("isPinned") === "true";
+  const keepExistingImage = formData.get("keepExistingImage") === "true";
 
   // Validation
   if (!title || !content || !categoryId) {
@@ -101,12 +137,28 @@ export async function action({ request, params }: ActionFunctionArgs) {
     return Response.json({ error: "Article not found" }, { status: 404 });
   }
 
+  // Handle file upload
+  let featuredImage = keepExistingImage ? article.featuredImage : undefined;
+  const imageFile = formData.get("imageFile") as File | null;
+
+  if (imageFile && imageFile.size > 0) {
+    const imageResult = await uploadImage(imageFile, "news");
+    if (imageResult.success && imageResult.url) {
+      featuredImage = imageResult.url;
+    } else {
+      return Response.json(
+        { error: imageResult.error || "Failed to upload image" },
+        { status: 400 }
+      );
+    }
+  }
+
   // Update article
   article.title = title;
   article.content = content;
-  article.excerpt = excerpt || content.substring(0, 200);
+  article.excerpt = excerpt || content.replace(/<[^>]*>/g, "").substring(0, 200);
   article.category = categoryId as any;
-  article.featuredImage = featuredImage || undefined;
+  article.featuredImage = featuredImage;
   article.isFeatured = isFeatured;
   article.isPinned = isPinned;
 
@@ -124,13 +176,36 @@ export async function action({ request, params }: ActionFunctionArgs) {
 }
 
 export default function AdminNewsEditPage() {
-  const { article, categories, successMessage } = useLoaderData<typeof loader>();
-  const actionData = useActionData<typeof action>();
+  const { article, categories, successMessage } = useLoaderData<LoaderData>();
+  const actionData = useActionData<{ success?: boolean; message?: string; error?: string }>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
 
   const [isFeatured, setIsFeatured] = useState(article.isFeatured);
   const [isPinned, setIsPinned] = useState(article.isPinned);
+  const [imagePreview, setImagePreview] = useState<string | null>(article.featuredImage || null);
+  const [keepExistingImage, setKeepExistingImage] = useState(!!article.featuredImage);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setImagePreview(event.target?.result as string);
+        setKeepExistingImage(false);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setImagePreview(null);
+    setKeepExistingImage(false);
+    if (imageInputRef.current) {
+      imageInputRef.current.value = "";
+    }
+  };
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "-";
@@ -162,8 +237,8 @@ export default function AdminNewsEditPage() {
           </div>
         </div>
         <Button
-          as="a"
-          href={`/news/${article.slug}`}
+          as={Link}
+          to={`/news/${article.slug}`}
           target="_blank"
           variant="flat"
           startContent={<Eye size={16} />}
@@ -184,7 +259,9 @@ export default function AdminNewsEditPage() {
         </div>
       )}
 
-      <Form method="post">
+      <Form method="post" encType="multipart/form-data">
+        <input type="hidden" name="keepExistingImage" value={keepExistingImage.toString()} />
+
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Main Content */}
           <div className="space-y-6 lg:col-span-2">
@@ -211,15 +288,13 @@ export default function AdminNewsEditPage() {
                   classNames={{ inputWrapper: "bg-gray-50" }}
                 />
 
-                <Textarea
+                <RichTextEditor
                   name="content"
                   label="Content"
                   placeholder="Write your article content here..."
-                  defaultValue={article.content}
-                  minRows={10}
+                  initialContent={article.content}
                   isRequired
-                  classNames={{ inputWrapper: "bg-gray-50" }}
-                  description="You can use HTML tags for formatting"
+                  minHeight="300px"
                 />
               </CardBody>
             </Card>
@@ -229,23 +304,44 @@ export default function AdminNewsEditPage() {
                 <h2 className="font-semibold">Featured Image</h2>
               </CardHeader>
               <CardBody>
-                <Input
-                  name="featuredImage"
-                  label="Image URL"
-                  placeholder="https://example.com/image.jpg"
-                  defaultValue={article.featuredImage || ""}
-                  description="Enter the URL of the featured image"
-                  classNames={{ inputWrapper: "bg-gray-50" }}
-                />
-                {article.featuredImage && (
-                  <div className="mt-4">
+                {imagePreview ? (
+                  <div className="relative">
                     <img
-                      src={article.featuredImage}
-                      alt="Featured"
-                      className="h-40 w-full rounded-lg object-cover"
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full h-48 object-cover rounded-lg"
                     />
+                    <Button
+                      isIconOnly
+                      size="sm"
+                      color="danger"
+                      className="absolute top-2 right-2"
+                      onPress={removeImage}
+                    >
+                      <X size={16} />
+                    </Button>
                   </div>
+                ) : (
+                  <label
+                    htmlFor="imageFile"
+                    className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary-500 hover:bg-primary-50 transition-colors"
+                  >
+                    <div className="flex flex-col items-center justify-center py-6">
+                      <ImagePlus size={40} className="text-gray-400 mb-2" />
+                      <p className="text-sm text-gray-500">Click to upload image</p>
+                      <p className="text-xs text-gray-400 mt-1">PNG, JPG, GIF up to 5MB</p>
+                    </div>
+                  </label>
                 )}
+                <input
+                  ref={imageInputRef}
+                  id="imageFile"
+                  type="file"
+                  name="imageFile"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageChange}
+                />
               </CardBody>
             </Card>
           </div>

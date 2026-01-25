@@ -1,8 +1,9 @@
 /**
  * Admin Toolbox Talks Listing Page
- * Task: 1.2.1.4.1
+ * Task: 1.2.1.4.1, 1.2.1.4.6 (Calendar view)
  */
 
+import { useState } from "react";
 import {
   Card,
   CardBody,
@@ -22,6 +23,7 @@ import {
   DropdownItem,
   Pagination,
   Image,
+  ButtonGroup,
 } from "@heroui/react";
 import {
   Plus,
@@ -33,6 +35,8 @@ import {
   Calendar,
   PlayCircle,
   Volume2,
+  List,
+  LayoutGrid,
 } from "lucide-react";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { useLoaderData, useSearchParams, Link } from "react-router";
@@ -47,11 +51,13 @@ import {
   serializeToolboxTalk,
   type SerializedToolboxTalk,
 } from "~/lib/services/toolbox-talk.server";
+import { ToolboxTalkCalendar } from "~/components/admin";
 
 const ITEMS_PER_PAGE = 10;
 
 interface LoaderData {
   talks: SerializedToolboxTalk[];
+  allTalks: SerializedToolboxTalk[]; // For calendar view
   stats: {
     total: number;
     published: number;
@@ -78,7 +84,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const status = url.searchParams.get("status") || "all";
   const search = url.searchParams.get("search") || "";
 
-  // Use service to get talks
+  // Use service to get talks for table view
   const { talks, total, totalPages } = await getToolboxTalks({
     status: status !== "all" ? (status as "draft" | "published" | "archived") : undefined,
     includeAll: status === "all",
@@ -87,11 +93,24 @@ export async function loader({ request }: LoaderFunctionArgs) {
     limit: ITEMS_PER_PAGE,
   });
 
+  // Task: 1.2.1.4.6 - Get all talks for calendar view (current month + 2 months)
+  const today = new Date();
+  const startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+  const endDate = new Date(today.getFullYear(), today.getMonth() + 3, 0);
+
+  const { talks: calendarTalks } = await getToolboxTalks({
+    includeAll: true,
+    startDate,
+    endDate,
+    limit: 200,
+  });
+
   // Get stats using service
   const stats = await getToolboxTalkStats();
 
   const data: LoaderData = {
     talks: talks.map(serializeToolboxTalk),
+    allTalks: calendarTalks.map(serializeToolboxTalk),
     stats,
     pagination: { page, totalPages, totalCount: total },
     currentStatus: status,
@@ -138,9 +157,12 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function AdminToolboxTalksPage() {
-  const { talks, stats, pagination, currentStatus, searchQuery } =
+  const { talks, allTalks, stats, pagination, currentStatus, searchQuery } =
     useLoaderData<LoaderData>();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // Task: 1.2.1.4.6 - View mode state (table or calendar)
+  const [viewMode, setViewMode] = useState<"table" | "calendar">("table");
 
   const handleStatusFilter = (status: string) => {
     const params = new URLSearchParams(searchParams);
@@ -210,14 +232,33 @@ export default function AdminToolboxTalksPage() {
           <h1 className="text-2xl font-bold text-gray-900">Toolbox Talks</h1>
           <p className="text-sm text-gray-500">Manage daily safety toolbox talks</p>
         </div>
-        <Button
-          as={Link}
-          to="/admin/toolbox-talks/new"
-          color="primary"
-          startContent={<Plus size={18} />}
-        >
-          Add Talk
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* Task: 1.2.1.4.6 - View mode toggle */}
+          <ButtonGroup size="sm" variant="flat">
+            <Button
+              color={viewMode === "table" ? "primary" : "default"}
+              onPress={() => setViewMode("table")}
+              startContent={<List size={16} />}
+            >
+              Table
+            </Button>
+            <Button
+              color={viewMode === "calendar" ? "primary" : "default"}
+              onPress={() => setViewMode("calendar")}
+              startContent={<LayoutGrid size={16} />}
+            >
+              Calendar
+            </Button>
+          </ButtonGroup>
+          <Button
+            as={Link}
+            to="/admin/toolbox-talks/new"
+            color="primary"
+            startContent={<Plus size={18} />}
+          >
+            Add Talk
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -266,145 +307,154 @@ export default function AdminToolboxTalksPage() {
         </Card>
       </div>
 
-      {/* Table */}
-      <Card className="shadow-sm">
-        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-lg font-semibold">All Talks</h2>
-          <Input
-            placeholder="Search talks..."
-            defaultValue={searchQuery}
-            onValueChange={handleSearch}
-            startContent={<Search size={18} className="text-gray-400" />}
-            className="max-w-xs"
-          />
-        </CardHeader>
-        <CardBody className="p-0">
-          <Table aria-label="Toolbox talks table" removeWrapper>
-            <TableHeader>
-              <TableColumn>TALK</TableColumn>
-              <TableColumn>SCHEDULED DATE</TableColumn>
-              <TableColumn>STATUS</TableColumn>
-              <TableColumn>VIEWS</TableColumn>
-              <TableColumn>ACTIONS</TableColumn>
-            </TableHeader>
-            <TableBody emptyContent="No toolbox talks found">
-              {talks.map((talk) => (
-                <TableRow key={talk.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="relative h-12 w-16 overflow-hidden rounded bg-gray-100">
-                        {talk.featuredMedia ? (
-                          <>
-                            <Image
-                              src={
-                                talk.featuredMedia.thumbnail ||
-                                talk.featuredMedia.url ||
-                                "https://via.placeholder.com/80x60?text=Talk"
-                              }
-                              alt={talk.title}
-                              className="h-full w-full object-cover"
-                            />
-                            {talk.featuredMedia.type !== "image" && (
-                              <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                                {talk.featuredMedia.type === "video" ? (
-                                  <PlayCircle size={16} className="text-white" />
-                                ) : (
-                                  <Volume2 size={16} className="text-white" />
+      {/* Task: 1.2.1.4.6 - Calendar View */}
+      {viewMode === "calendar" && (
+        <ToolboxTalkCalendar talks={allTalks} />
+      )}
+
+      {/* Table View */}
+      {viewMode === "table" && (
+        <>
+          <Card className="shadow-sm">
+            <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <h2 className="text-lg font-semibold">All Talks</h2>
+              <Input
+                placeholder="Search talks..."
+                defaultValue={searchQuery}
+                onValueChange={handleSearch}
+                startContent={<Search size={18} className="text-gray-400" />}
+                className="max-w-xs"
+              />
+            </CardHeader>
+            <CardBody className="p-0">
+              <Table aria-label="Toolbox talks table" removeWrapper>
+                <TableHeader>
+                  <TableColumn>TALK</TableColumn>
+                  <TableColumn>SCHEDULED DATE</TableColumn>
+                  <TableColumn>STATUS</TableColumn>
+                  <TableColumn>VIEWS</TableColumn>
+                  <TableColumn>ACTIONS</TableColumn>
+                </TableHeader>
+                <TableBody emptyContent="No toolbox talks found">
+                  {talks.map((talk) => (
+                    <TableRow key={talk.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="relative h-12 w-16 overflow-hidden rounded bg-gray-100">
+                            {talk.featuredMedia ? (
+                              <>
+                                <Image
+                                  src={
+                                    talk.featuredMedia.thumbnail ||
+                                    talk.featuredMedia.url ||
+                                    "https://via.placeholder.com/80x60?text=Talk"
+                                  }
+                                  alt={talk.title}
+                                  className="h-full w-full object-cover"
+                                />
+                                {talk.featuredMedia.type !== "image" && (
+                                  <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                                    {talk.featuredMedia.type === "video" ? (
+                                      <PlayCircle size={16} className="text-white" />
+                                    ) : (
+                                      <Volume2 size={16} className="text-white" />
+                                    )}
+                                  </div>
                                 )}
+                              </>
+                            ) : (
+                              <div className="flex h-full items-center justify-center bg-gradient-to-br from-amber-100 to-orange-100">
+                                <Calendar size={16} className="text-amber-400" />
                               </div>
                             )}
-                          </>
-                        ) : (
-                          <div className="flex h-full items-center justify-center bg-gradient-to-br from-amber-100 to-orange-100">
-                            <Calendar size={16} className="text-amber-400" />
                           </div>
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium text-gray-900">
-                          {talk.title}
-                        </p>
-                        <p className="truncate text-xs text-gray-500">
-                          By {talk.author?.name || "Unknown"}
-                        </p>
-                      </div>
-                      {getMediaIcon(talk)}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Calendar size={14} className="text-gray-400" />
-                      <span className="text-sm">{formatDate(talk.scheduledDate)}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Chip size="sm" color={statusColors[talk.status]} variant="flat">
-                      {talk.status}
-                    </Chip>
-                  </TableCell>
-                  <TableCell>{talk.views}</TableCell>
-                  <TableCell>
-                    <Dropdown>
-                      <DropdownTrigger>
-                        <Button isIconOnly variant="light" size="sm">
-                          <MoreVertical size={16} />
-                        </Button>
-                      </DropdownTrigger>
-                      <DropdownMenu aria-label="Actions">
-                        <DropdownItem
-                          key="view"
-                          startContent={<Eye size={16} />}
-                          href={`/toolbox-talk/${talk.slug}`}
-                          target="_blank"
-                        >
-                          View
-                        </DropdownItem>
-                        <DropdownItem
-                          key="edit"
-                          startContent={<Edit size={16} />}
-                          href={`/admin/toolbox-talks/${talk.id}/edit`}
-                        >
-                          Edit
-                        </DropdownItem>
-                        <DropdownItem
-                          key="toggle-status"
-                          startContent={<Eye size={16} />}
-                          onPress={() => submitForm("toggle-status", talk.id)}
-                        >
-                          {talk.status === "published" ? "Unpublish" : "Publish"}
-                        </DropdownItem>
-                        <DropdownItem
-                          key="delete"
-                          color="danger"
-                          startContent={<Trash2 size={16} />}
-                          onPress={() => {
-                            if (confirm("Are you sure you want to delete this talk?")) {
-                              submitForm("delete", talk.id);
-                            }
-                          }}
-                        >
-                          Delete
-                        </DropdownItem>
-                      </DropdownMenu>
-                    </Dropdown>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardBody>
-      </Card>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate font-medium text-gray-900">
+                              {talk.title}
+                            </p>
+                            <p className="truncate text-xs text-gray-500">
+                              By {talk.author?.name || "Unknown"}
+                            </p>
+                          </div>
+                          {getMediaIcon(talk)}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Calendar size={14} className="text-gray-400" />
+                          <span className="text-sm">{formatDate(talk.scheduledDate)}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Chip size="sm" color={statusColors[talk.status]} variant="flat">
+                          {talk.status}
+                        </Chip>
+                      </TableCell>
+                      <TableCell>{talk.views}</TableCell>
+                      <TableCell>
+                        <Dropdown>
+                          <DropdownTrigger>
+                            <Button isIconOnly variant="light" size="sm">
+                              <MoreVertical size={16} />
+                            </Button>
+                          </DropdownTrigger>
+                          <DropdownMenu aria-label="Actions">
+                            <DropdownItem
+                              key="view"
+                              startContent={<Eye size={16} />}
+                              href={`/toolbox-talk/${talk.slug}`}
+                              target="_blank"
+                            >
+                              View
+                            </DropdownItem>
+                            <DropdownItem
+                              key="edit"
+                              startContent={<Edit size={16} />}
+                              href={`/admin/toolbox-talks/${talk.id}/edit`}
+                            >
+                              Edit
+                            </DropdownItem>
+                            <DropdownItem
+                              key="toggle-status"
+                              startContent={<Eye size={16} />}
+                              onPress={() => submitForm("toggle-status", talk.id)}
+                            >
+                              {talk.status === "published" ? "Unpublish" : "Publish"}
+                            </DropdownItem>
+                            <DropdownItem
+                              key="delete"
+                              color="danger"
+                              startContent={<Trash2 size={16} />}
+                              onPress={() => {
+                                if (confirm("Are you sure you want to delete this talk?")) {
+                                  submitForm("delete", talk.id);
+                                }
+                              }}
+                            >
+                              Delete
+                            </DropdownItem>
+                          </DropdownMenu>
+                        </Dropdown>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardBody>
+          </Card>
 
-      {/* Pagination */}
-      {pagination.totalPages > 1 && (
-        <div className="flex justify-center">
-          <Pagination
-            total={pagination.totalPages}
-            page={pagination.page}
-            onChange={handlePageChange}
-            showControls
-          />
-        </div>
+          {/* Pagination */}
+          {pagination.totalPages > 1 && (
+            <div className="flex justify-center">
+              <Pagination
+                total={pagination.totalPages}
+                page={pagination.page}
+                onChange={handlePageChange}
+                showControls
+              />
+            </div>
+          )}
+        </>
       )}
     </div>
   );

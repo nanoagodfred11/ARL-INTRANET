@@ -29,6 +29,16 @@ import {
   BookUser,
   Building2,
   HardHat,
+  AlertTriangle,
+  Calendar,
+  Image,
+  Lightbulb,
+  Video,
+  UtensilsCrossed,
+  MessageSquare,
+  Bot,
+  Rss,
+  HelpCircle,
 } from "lucide-react";
 import { useState } from "react";
 import { requireAuth, getSessionData } from "~/lib/services/session.server";
@@ -50,10 +60,23 @@ export async function loader({ request }: LoaderFunctionArgs) {
 const sidebarItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "News", href: "/admin/news", icon: Newspaper },
+  { label: "Events", href: "/admin/events", icon: Calendar },
+  { label: "Gallery", href: "/admin/gallery", icon: Image },
   { label: "Directory", href: "/admin/directory", icon: BookUser },
   { label: "Departments", href: "/admin/departments", icon: Building2 },
   { label: "App Links", href: "/admin/apps", icon: AppWindow },
+  { label: "Menus", href: "/admin/menus", icon: UtensilsCrossed },
+  { label: "Suggestions", href: "/admin/suggestions", icon: MessageSquare },
+  { label: "Chatbot FAQs", href: "/admin/faqs", icon: Bot },
+  { label: "News Sources", href: "/admin/news-sources", icon: Rss },
+];
+
+const safetyItems = [
+  { label: "Alerts", href: "/admin/alerts", icon: AlertTriangle },
   { label: "Toolbox Talks", href: "/admin/toolbox-talks", icon: HardHat },
+  { label: "Safety Tips", href: "/admin/safety-tips", icon: Lightbulb },
+  { label: "Safety Videos", href: "/admin/safety-videos", icon: Video },
+  { label: "Safety Categories", href: "/admin/safety-categories", icon: Shield },
 ];
 
 const superadminItems = [
@@ -117,6 +140,32 @@ export default function AdminLayout() {
         <nav className="flex-1 overflow-y-auto p-4">
           <div className="space-y-1">
             {sidebarItems.map((item) => (
+              <Link
+                key={item.href}
+                to={item.href}
+                onClick={() => setSidebarOpen(false)}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                  isActive(item.href)
+                    ? "bg-primary-50 text-primary-700"
+                    : "text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                <item.icon
+                  size={20}
+                  className={isActive(item.href) ? "text-primary-500" : "text-gray-400"}
+                />
+                {item.label}
+              </Link>
+            ))}
+          </div>
+
+          {/* Safety Section */}
+          <div className="my-4 border-t" />
+          <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
+            Safety
+          </p>
+          <div className="space-y-1">
+            {safetyItems.map((item) => (
               <Link
                 key={item.href}
                 to={item.href}

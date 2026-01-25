@@ -1,4 +1,4 @@
-import { Avatar, Card, CardBody, Link, Button } from "@heroui/react";
+import { Avatar, Card, CardBody, Button } from "@heroui/react";
 import {
   Home,
   Newspaper,
@@ -13,7 +13,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useState } from "react";
-import { useLocation } from "react-router";
+import { Link, useLocation } from "react-router";
 
 const menuItems = [
   { label: "Home", href: "/", icon: Home },
@@ -48,7 +48,7 @@ export function LeftSidebar() {
   };
 
   return (
-    <aside className="sticky top-20 hidden w-64 shrink-0 lg:block">
+    <aside className="sticky top-20 hidden w-64 shrink-0 self-start max-h-[calc(100vh-6rem)] overflow-y-auto lg:block">
       {/* User Card */}
       <Card className="mb-4 shadow-sm">
         <CardBody className="p-4">
@@ -76,7 +76,7 @@ export function LeftSidebar() {
             <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
               Pages
             </span>
-            <Link href="/" className="text-xs text-primary-500 hover:underline">
+            <Link to="/" className="text-xs text-primary-500 hover:underline">
               View all
             </Link>
           </div>
@@ -84,7 +84,7 @@ export function LeftSidebar() {
             {menuItems.map((item) => (
               <Link
                 key={item.href}
-                href={item.href}
+                to={item.href}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
                   isActive(item.href)
                     ? "bg-primary-50 font-medium text-primary-700"
@@ -116,7 +116,7 @@ export function LeftSidebar() {
               {quickAccess.map((item) => (
                 <Link
                   key={item.href}
-                  href={item.href}
+                  to={item.href}
                   className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50"
                 >
                   <item.icon size={18} className="text-gray-400" />
@@ -128,16 +128,21 @@ export function LeftSidebar() {
         </CardBody>
       </Card>
 
-      {/* Safety Stats */}
+      {/* Safety Quick Access */}
       <Card className="shadow-sm">
         <CardBody className="p-4">
           <div className="text-center">
             <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
               <Shield size={28} className="text-green-600" />
             </div>
-            <p className="text-3xl font-bold text-gray-900">247</p>
-            <p className="text-sm text-gray-500">Days Without LTI</p>
-            <p className="mt-2 text-xs text-green-600">Keep up the great work!</p>
+            <p className="text-lg font-semibold text-gray-900">Safety First</p>
+            <p className="text-sm text-gray-500">Access safety resources</p>
+            <Link
+              to="/safety"
+              className="mt-3 inline-block rounded-lg bg-green-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-600"
+            >
+              Safety Center
+            </Link>
           </div>
         </CardBody>
       </Card>
