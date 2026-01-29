@@ -23,8 +23,8 @@ test.describe("Anonymous Suggestion Box", () => {
     await page.goto("/suggestions");
 
     // Form elements should be visible - check for the form structure
-    await expect(page.locator('button:has-text("Select a category")')).toBeVisible();
-    await expect(page.locator('textarea[name="content"]')).toBeVisible();
+    // Check for Submit button and form heading
+    await expect(page.locator("h2:has-text('Submit Your Suggestion')")).toBeVisible();
     await expect(page.locator('button:has-text("Submit Anonymously")')).toBeVisible();
   });
 
@@ -39,8 +39,8 @@ test.describe("Anonymous Suggestion Box", () => {
   test("should have character counter", async ({ page }) => {
     await page.goto("/suggestions");
 
-    // Type in textarea
-    const textarea = page.locator('textarea[name="content"]');
+    // Type in HeroUI Textarea component (find by data-slot or aria attributes)
+    const textarea = page.locator('[data-slot="input-wrapper"] textarea').first();
     await textarea.fill("This is a test suggestion");
 
     // Character count should update
@@ -58,8 +58,8 @@ test.describe("Anonymous Suggestion Box", () => {
   test("should show minimum character message", async ({ page }) => {
     await page.goto("/suggestions");
 
-    // Type less than minimum characters
-    const textarea = page.locator('textarea[name="content"]');
+    // Type less than minimum characters in HeroUI Textarea
+    const textarea = page.locator('[data-slot="input-wrapper"] textarea').first();
     await textarea.fill("Short");
 
     // Should show minimum character message
